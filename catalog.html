@@ -8,6 +8,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700;900&family=Heebo:wght@400;500;700;800&display=swap" rel="stylesheet" />
+<link rel="manifest" href="manifest.json" />
+<link rel="apple-touch-icon" href="https://placehold.co/192x192/2a241d/f6efe2?text=C" />
 <style>
   :root{
     --bg:#f3ede4;
@@ -268,6 +270,58 @@
   }
   .breadcrumb{font-size:12px;color:var(--muted);padding:10px 16px 0;}
   .breadcrumb b{color:var(--accent);}
+
+  /* ---------- install banner ---------- */
+  .install-bar{
+    flex:0 0 auto;display:flex;align-items:center;gap:10px;
+    padding:10px 14px;background:var(--ink);color:#f6efe2;
+    font-size:13px;font-weight:600;z-index:40;
+    animation:fi .3s ease both;
+  }
+  .install-bar-icon{font-size:22px;flex:0 0 auto;}
+  .install-bar-text{flex:1;min-width:0;line-height:1.35;}
+  .install-bar-text small{display:block;font-size:11px;font-weight:400;opacity:.7;margin-top:1px;}
+  .install-bar-btn{
+    flex:0 0 auto;padding:7px 14px;border-radius:999px;
+    background:#f6efe2;color:var(--ink);font-size:12.5px;font-weight:800;
+    border:0;cursor:pointer;font-family:inherit;white-space:nowrap;
+  }
+  .install-bar-close{
+    flex:0 0 auto;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;
+    background:rgba(255,255,255,.15);font-size:16px;color:#f6efe2;border:0;cursor:pointer;
+  }
+
+  /* iOS guide sheet */
+  .install-sheet-overlay{
+    position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;
+    display:flex;align-items:flex-end;animation:fi .2s ease both;
+  }
+  .install-sheet{
+    width:100%;max-width:560px;margin:0 auto;
+    background:var(--surface);border-radius:24px 24px 0 0;padding:20px 20px calc(20px + env(safe-area-inset-bottom));
+    box-shadow:0 -8px 40px rgba(0,0,0,.18);
+  }
+  .install-sheet-handle{width:36px;height:4px;background:var(--line-strong);border-radius:2px;margin:0 auto 18px;}
+  .install-sheet-title{font-family:var(--serif);font-size:20px;font-weight:900;text-align:center;margin-bottom:6px;}
+  .install-sheet-sub{font-size:13px;color:var(--muted);text-align:center;margin-bottom:22px;}
+  .install-steps{display:flex;flex-direction:column;gap:14px;margin-bottom:24px;}
+  .install-step{
+    display:flex;align-items:center;gap:14px;
+    background:var(--bg);border-radius:14px;padding:13px 15px;
+    border:1px solid var(--line);
+  }
+  .install-step-num{
+    flex:0 0 auto;width:28px;height:28px;border-radius:50%;
+    background:var(--accent);color:#fff;display:grid;place-items:center;
+    font-size:13px;font-weight:800;
+  }
+  .install-step-text{font-size:13.5px;font-weight:600;line-height:1.4;}
+  .install-step-text small{display:block;font-size:12px;color:var(--muted);font-weight:400;margin-top:2px;}
+  .install-step-icon{margin-right:4px;vertical-align:-3px;}
+  .install-sheet-close{
+    width:100%;padding:13px;border-radius:14px;background:var(--ink);color:#f6efe2;
+    font-size:15px;font-weight:700;font-family:inherit;border:0;cursor:pointer;
+  }
 </style>
 </head>
 <body>
@@ -882,6 +936,99 @@ function Cart({ data, cart, setCart, go, toast }){
 }
 
 /* =========================================================================
+   INSTALL BANNER  — Android (beforeinstallprompt) + iOS (Safari guide)
+   ========================================================================= */
+function InstallBanner(){
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [showIOSSheet, setShowIOSSheet] = useState(false);
+  const [dismissed, setDismissed] = useState(() => store.get("install_dismissed", false));
+
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+  const isInStandalone = window.matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+
+  useEffect(()=>{
+    if("serviceWorker" in navigator){
+      navigator.serviceWorker.register("sw.js").catch(()=>{});
+    }
+    const handler = e => { e.preventDefault(); setDeferredPrompt(e); };
+    window.addEventListener("beforeinstallprompt", handler);
+    return () => window.removeEventListener("beforeinstallprompt", handler);
+  },[]);
+
+  if(isInStandalone || dismissed) return null;
+  if(!deferredPrompt && !isIOS) return null;
+
+  const dismiss = () => { store.set("install_dismissed", true); setDismissed(true); };
+
+  const installAndroid = async () => {
+    if(!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    setDeferredPrompt(null);
+    if(outcome === "accepted") dismiss();
+  };
+
+  const ShareIcon = () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="install-step-icon">
+      <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/>
+    </svg>
+  );
+  const PlusIcon = () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="install-step-icon">
+      <rect x="3" y="3" width="18" height="18" rx="4"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/>
+    </svg>
+  );
+
+  if(showIOSSheet) return (
+    <div className="install-sheet-overlay" onClick={e=>{ if(e.target===e.currentTarget){ setShowIOSSheet(false); dismiss(); } }}>
+      <div className="install-sheet">
+        <div className="install-sheet-handle"/>
+        <div className="install-sheet-title">התקן כאפליקציה</div>
+        <div className="install-sheet-sub">עקוב אחר 3 שלבים פשוטים להתקנה על מסך הבית</div>
+        <div className="install-steps">
+          <div className="install-step">
+            <div className="install-step-num">1</div>
+            <div className="install-step-text">
+              לחץ על כפתור השיתוף <ShareIcon/>
+              <small>הכפתור נמצא בסרגל התחתון של Safari</small>
+            </div>
+          </div>
+          <div className="install-step">
+            <div className="install-step-num">2</div>
+            <div className="install-step-text">
+              גלול מטה ובחר <PlusIcon/> "הוסף למסך הבית"
+              <small>Add to Home Screen</small>
+            </div>
+          </div>
+          <div className="install-step">
+            <div className="install-step-num">3</div>
+            <div className="install-step-text">
+              לחץ "הוסף" בפינה הימנית העליונה
+              <small>האפליקציה תופיע על מסך הבית שלך</small>
+            </div>
+          </div>
+        </div>
+        <button className="install-sheet-close" onClick={()=>{ setShowIOSSheet(false); dismiss(); }}>הבנתי, תודה!</button>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="install-bar">
+      <span className="install-bar-icon">📲</span>
+      <div className="install-bar-text">
+        התקן כאפליקציה
+        <small>גישה מהירה ישירות מהמסך הבית</small>
+      </div>
+      {isIOS
+        ? <button className="install-bar-btn" onClick={()=>setShowIOSSheet(true)}>הוראות</button>
+        : <button className="install-bar-btn" onClick={installAndroid}>התקן</button>}
+      <button className="install-bar-close" onClick={dismiss}>✕</button>
+    </div>
+  );
+}
+
+/* =========================================================================
    ROOT APP
    ========================================================================= */
 function App(){
@@ -977,6 +1124,7 @@ function App(){
 
   return (
     <div className="app">
+      <InstallBanner />
       <header className="hdr">
         {canBack
           ? <button className="icon-btn" onClick={back}><I.back/></button>
