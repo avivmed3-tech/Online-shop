@@ -935,6 +935,11 @@ function Cart({ data, cart, setCart, go, toast }){
   );
 }
 
+// Register SW at module load — not tied to any UI component lifecycle
+if("serviceWorker" in navigator){
+  window.addEventListener("load", ()=> navigator.serviceWorker.register("sw.js").catch(()=>{}));
+}
+
 /* =========================================================================
    INSTALL BANNER  — Android (beforeinstallprompt) + iOS (Safari guide)
    ========================================================================= */
@@ -947,9 +952,6 @@ function InstallBanner(){
   const isInStandalone = window.matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
 
   useEffect(()=>{
-    if("serviceWorker" in navigator){
-      navigator.serviceWorker.register("sw.js").catch(()=>{});
-    }
     const handler = e => { e.preventDefault(); setDeferredPrompt(e); };
     window.addEventListener("beforeinstallprompt", handler);
     return () => window.removeEventListener("beforeinstallprompt", handler);
@@ -980,7 +982,7 @@ function InstallBanner(){
   );
 
   if(showIOSSheet) return (
-    <div className="install-sheet-overlay" onClick={e=>{ if(e.target===e.currentTarget){ setShowIOSSheet(false); dismiss(); } }}>
+    <div className="install-sheet-overlay" onClick={e=>{ if(e.target===e.currentTarget) setShowIOSSheet(false); }}>
       <div className="install-sheet">
         <div className="install-sheet-handle"/>
         <div className="install-sheet-title">התקן כאפליקציה</div>

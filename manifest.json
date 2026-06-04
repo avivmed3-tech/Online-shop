@@ -11,13 +11,13 @@
   "dir": "rtl",
   "icons": [
     {
-      "src": "https://placehold.co/192x192/2a241d/f6efe2?text=C",
+      "src": "https://placehold.co/192x192/2a241d/f6efe2.png?text=C",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "https://placehold.co/512x512/2a241d/f6efe2?text=C",
+      "src": "https://placehold.co/512x512/2a241d/f6efe2.png?text=C",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"

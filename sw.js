@@ -17,6 +17,8 @@ self.addEventListener("activate", e => {
 
 self.addEventListener("fetch", e => {
   if (e.request.method !== "GET") return;
+  // Skip cross-origin requests — don't intercept fonts, CDN, placehold.co etc.
+  if (new URL(e.request.url).origin !== location.origin) return;
   e.respondWith(
     fetch(e.request)
       .then(res => {
@@ -24,6 +26,8 @@ self.addEventListener("fetch", e => {
         caches.open(CACHE).then(c => c.put(e.request, clone));
         return res;
       })
-      .catch(() => caches.match(e.request))
+      .catch(() =>
+        caches.match(e.request).then(r => r || caches.match("./catalog.html"))
+      )
   );
 });
