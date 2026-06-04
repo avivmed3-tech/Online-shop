@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<meta name="theme-color" content="#2a241d" />
+<title>DOMICLE · קטלוג</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700;900&family=Heebo:wght@400;500;700;800&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#f3ede4;
+    --surface:#fbf8f3;
+    --card:#ffffff;
+    --ink:#241e18;
+    --muted:#8b8073;
+    --faint:#b6ab9c;
+    --line:#e6ddd0;
+    --line-strong:#d9cebd;
+    --accent:#a8512b;        /* terracotta */
+    --accent-soft:#f0e0d6;
+    --olive:#5f5d44;
+    --gold:#b08234;
+    --shadow:0 1px 2px rgba(36,30,24,.05), 0 8px 24px rgba(36,30,24,.06);
+    --shadow-lg:0 10px 40px rgba(36,30,24,.16);
+    --r:16px;
+    --header-h:56px;
+    --nav-h:62px;
+    --serif:'Frank Ruhl Libre',Georgia,serif;
+    --sans:'Heebo',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;height:100%;background:var(--bg);}
+  body{
+    font-family:var(--sans);color:var(--ink);
+    overscroll-behavior:none;
+    -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+  }
+  #root{height:100dvh;}
+  button{font-family:inherit;color:inherit;cursor:pointer;border:0;background:none;}
+  input{font-family:inherit;}
+  ::-webkit-scrollbar{width:0;height:0;}
+
+  .app{
+    height:100dvh;display:flex;flex-direction:column;
+    max-width:560px;margin:0 auto;position:relative;
+    background:var(--bg);overflow:hidden;
+    box-shadow:0 0 60px rgba(0,0,0,.06);
+  }
+
+  /* ---------- header ---------- */
+  .hdr{
+    height:var(--header-h);flex:0 0 auto;
+    display:flex;align-items:center;gap:6px;padding:0 12px;
+    background:rgba(251,248,243,.86);backdrop-filter:saturate(1.4) blur(14px);
+    border-bottom:1px solid var(--line);position:relative;z-index:30;
+  }
+  .icon-btn{
+    width:40px;height:40px;border-radius:12px;display:grid;place-items:center;
+    color:var(--ink);position:relative;transition:background .15s;
+  }
+  .icon-btn:active{background:var(--line);}
+  .brand{flex:1;display:flex;flex-direction:column;align-items:center;line-height:1;gap:2px;user-select:none;}
+  .brand .name{font-family:var(--serif);font-weight:900;font-size:21px;letter-spacing:.16em;}
+  .brand .tag{font-size:8.5px;color:var(--muted);letter-spacing:.22em;text-transform:uppercase;}
+  .cart-badge{
+    position:absolute;top:4px;left:4px;min-width:17px;height:17px;padding:0 4px;
+    background:var(--accent);color:#fff;border-radius:9px;font-size:10px;font-weight:800;
+    display:grid;place-items:center;box-shadow:0 0 0 2px var(--surface);
+  }
+
+  /* ---------- generic scroll page ---------- */
+  .page{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;}
+  .pad{padding:16px;}
+  .section-h{display:flex;align-items:baseline;justify-content:space-between;margin:22px 4px 12px;}
+  .section-h h2{font-family:var(--serif);font-weight:700;font-size:20px;margin:0;}
+  .section-h .more{font-size:13px;color:var(--accent);font-weight:600;}
+
+  /* ---------- hero ---------- */
+  .hero{
+    margin:14px 16px 4px;border-radius:22px;overflow:hidden;position:relative;
+    background:linear-gradient(120deg,#3a3324 0%,#5f5d44 48%,#7d6a4a 100%);
+    color:#f6efe2;min-height:188px;display:flex;flex-direction:column;justify-content:flex-end;
+    padding:20px;box-shadow:var(--shadow-lg);isolation:isolate;
+  }
+  .hero::before{
+    content:"";position:absolute;inset:0;z-index:-1;opacity:.5;
+    background:
+      radial-gradient(120px 120px at 82% 22%, rgba(255,255,255,.22), transparent 70%),
+      repeating-linear-gradient(135deg, rgba(255,255,255,.04) 0 2px, transparent 2px 12px);
+  }
+  .hero .kicker{font-size:11px;letter-spacing:.3em;text-transform:uppercase;opacity:.8;margin-bottom:8px;}
+  .hero h1{font-family:var(--serif);font-weight:900;font-size:30px;line-height:1.05;margin:0 0 6px;}
+  .hero p{margin:0;font-size:13px;opacity:.85;max-width:80%;}
+  .hero .cta{
+    margin-top:14px;align-self:flex-start;background:#f6efe2;color:#2a241d;
+    font-weight:700;font-size:13px;padding:9px 18px;border-radius:999px;
+  }
+
+  /* ---------- chips ---------- */
+  .chips{display:flex;gap:9px;overflow-x:auto;padding:4px 16px 2px;scrollbar-width:none;}
+  .chips::-webkit-scrollbar{display:none;}
+  .chip{
+    flex:0 0 auto;padding:9px 16px;border-radius:999px;background:var(--surface);
+    border:1px solid var(--line-strong);font-size:13px;font-weight:600;color:var(--ink);
+    white-space:nowrap;transition:.15s;
+  }
+  .chip.active{background:var(--ink);color:#f6efe2;border-color:var(--ink);}
+
+  /* ---------- category tiles ---------- */
+  .tiles{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:0 16px;}
+  .tile{
+    border-radius:var(--r);overflow:hidden;position:relative;aspect-ratio:1.18/1;
+    background:var(--card);border:1px solid var(--line);box-shadow:var(--shadow);
+    display:flex;align-items:flex-end;text-align:right;
+  }
+  .tile img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+  .tile .ov{
+    position:relative;z-index:1;width:100%;padding:12px 13px;
+    background:linear-gradient(0deg, rgba(20,16,12,.78) 0%, rgba(20,16,12,.18) 60%, transparent 100%);
+    color:#fff;
+  }
+  .tile .ov b{font-family:var(--serif);font-weight:700;font-size:15.5px;display:block;line-height:1.15;}
+  .tile .ov span{font-size:11px;opacity:.82;}
+  .tile:active{transform:scale(.985);}
+
+  /* ---------- horizontal product rail ---------- */
+  .rail{display:flex;gap:12px;overflow-x:auto;padding:2px 16px 6px;scrollbar-width:none;}
+  .rail::-webkit-scrollbar{display:none;}
+  .rail .pc{flex:0 0 150px;}
+
+  /* ---------- product card ---------- */
+  .pc{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;
+      box-shadow:var(--shadow);display:flex;flex-direction:column;height:100%;text-align:right;
+      contain:layout style;}
+  .pc:active{transform:scale(.985);}
+  .pc .imgwrap{position:relative;width:100%;aspect-ratio:1/1;background:var(--accent-soft);overflow:hidden;}
+  .pc .imgwrap img{width:100%;height:100%;object-fit:cover;display:block;}
+  .pc .body{padding:9px 10px 11px;display:flex;flex-direction:column;gap:3px;flex:1;}
+  .pc .nm{font-size:13px;font-weight:600;line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:33px;}
+  .pc .sku{font-size:10.5px;color:var(--faint);letter-spacing:.04em;}
+  .pc .price{font-size:14px;font-weight:800;color:var(--accent);margin-top:1px;}
+  .badge{
+    position:absolute;top:8px;right:8px;z-index:2;font-size:10px;font-weight:800;
+    padding:3px 8px;border-radius:999px;background:var(--accent);color:#fff;letter-spacing:.02em;
+  }
+  .badge.new{background:var(--olive);}
+  .fav{
+    position:absolute;top:6px;left:6px;z-index:2;width:30px;height:30px;border-radius:50%;
+    background:rgba(255,255,255,.9);display:grid;place-items:center;color:var(--faint);
+    backdrop-filter:blur(4px);box-shadow:0 1px 3px rgba(0,0,0,.12);
+  }
+  .fav.on{color:var(--accent);}
+
+  /* list-mode card */
+  .pc.list{flex-direction:row;align-items:stretch;height:100%;}
+  .pc.list .imgwrap{width:84px;flex:0 0 84px;aspect-ratio:auto;}
+  .pc.list .body{justify-content:center;}
+
+  /* ---------- virtualized grid ---------- */
+  .vgrid{position:relative;flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;}
+  .vgrid-inner{position:relative;width:100%;}
+  .vcell{position:absolute;}
+
+  /* ---------- list toolbar ---------- */
+  .toolbar{
+    flex:0 0 auto;display:flex;align-items:center;gap:8px;padding:10px 14px;
+    background:var(--surface);border-bottom:1px solid var(--line);z-index:10;
+  }
+  .toolbar .ttl{flex:1;min-width:0;}
+  .toolbar .ttl b{font-family:var(--serif);font-size:17px;display:block;line-height:1.1;}
+  .toolbar .ttl span{font-size:11.5px;color:var(--muted);}
+  .seg{display:flex;background:var(--bg);border:1px solid var(--line-strong);border-radius:10px;overflow:hidden;}
+  .seg button{width:36px;height:34px;display:grid;place-items:center;color:var(--muted);}
+  .seg button.on{background:var(--ink);color:#f6efe2;}
+  .sortsel{
+    appearance:none;border:1px solid var(--line-strong);background:var(--bg);
+    border-radius:10px;padding:7px 26px 7px 10px;font-size:12.5px;font-weight:600;color:var(--ink);
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238b8073' stroke-width='3'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;background-position:8px center;
+  }
+
+  /* ---------- search ---------- */
+  .searchbar{flex:0 0 auto;padding:10px 14px;background:var(--surface);border-bottom:1px solid var(--line);}
+  .searchbar .field{display:flex;align-items:center;gap:8px;background:var(--bg);border:1px solid var(--line-strong);border-radius:13px;padding:0 12px;height:44px;}
+  .searchbar input{flex:1;border:0;background:none;font-size:15px;outline:none;color:var(--ink);height:100%;}
+  .searchbar input::placeholder{color:var(--faint);}
+
+  /* ---------- product detail ---------- */
+  .pd-gallery{position:relative;width:100%;aspect-ratio:1/1;background:var(--accent-soft);}
+  .pd-gallery img{width:100%;height:100%;object-fit:cover;}
+  .pd-thumbs{display:flex;gap:8px;padding:12px 16px 0;overflow-x:auto;scrollbar-width:none;}
+  .pd-thumbs::-webkit-scrollbar{display:none;}
+  .pd-thumb{flex:0 0 56px;height:56px;border-radius:10px;overflow:hidden;border:2px solid transparent;background:var(--accent-soft);}
+  .pd-thumb.on{border-color:var(--accent);}
+  .pd-thumb img{width:100%;height:100%;object-fit:cover;}
+  .pd-info{padding:16px;}
+  .pd-cat{font-size:12px;color:var(--accent);font-weight:700;letter-spacing:.04em;}
+  .pd-title{font-family:var(--serif);font-weight:700;font-size:25px;line-height:1.12;margin:4px 0 6px;}
+  .pd-sku{font-size:12.5px;color:var(--muted);}
+  .pd-desc{font-size:14px;line-height:1.7;color:#4f463c;margin-top:14px;}
+  .vbtns{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;}
+  .vbtn{padding:9px 15px;border-radius:11px;border:1.5px solid var(--line-strong);background:var(--surface);font-size:13px;font-weight:600;transition:.12s;}
+  .vbtn.on{border-color:var(--ink);background:var(--ink);color:#f6efe2;}
+  .lbl{font-size:12px;font-weight:700;color:var(--muted);margin:18px 0 8px;letter-spacing:.02em;}
+  .qty{display:inline-flex;align-items:center;border:1.5px solid var(--line-strong);border-radius:12px;overflow:hidden;}
+  .qty button{width:42px;height:42px;display:grid;place-items:center;font-size:20px;color:var(--ink);}
+  .qty b{min-width:42px;text-align:center;font-size:16px;font-weight:700;}
+
+  /* ---------- bottom action bar ---------- */
+  .actionbar{
+    flex:0 0 auto;display:flex;gap:10px;padding:12px 16px calc(12px + env(safe-area-inset-bottom));
+    background:var(--surface);border-top:1px solid var(--line);
+  }
+  .btn-primary{
+    flex:1;height:50px;border-radius:14px;background:var(--accent);color:#fff;
+    font-size:15.5px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:8px;
+    box-shadow:0 6px 16px rgba(168,81,43,.32);transition:.12s;
+  }
+  .btn-primary:active{transform:translateY(1px);filter:brightness(.96);}
+  .btn-ghost{
+    width:50px;height:50px;border-radius:14px;border:1.5px solid var(--line-strong);
+    display:grid;place-items:center;color:var(--ink);background:var(--surface);
+  }
+
+  /* ---------- cart ---------- */
+  .cart-row{display:flex;gap:12px;padding:13px 16px;border-bottom:1px solid var(--line);align-items:center;}
+  .cart-row .th{width:62px;height:62px;flex:0 0 62px;border-radius:12px;overflow:hidden;background:var(--accent-soft);}
+  .cart-row .th img{width:100%;height:100%;object-fit:cover;}
+  .cart-row .info{flex:1;min-width:0;}
+  .cart-row .info b{font-size:14px;font-weight:600;display:block;line-height:1.2;}
+  .cart-row .info span{font-size:11.5px;color:var(--muted);}
+  .cart-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:14px;color:var(--muted);padding:40px;}
+  .cart-empty .circle{width:96px;height:96px;border-radius:50%;background:var(--surface);border:1px solid var(--line);display:grid;place-items:center;color:var(--faint);}
+
+  /* ---------- bottom nav ---------- */
+  .nav{
+    flex:0 0 auto;height:calc(var(--nav-h) + env(safe-area-inset-bottom));
+    padding-bottom:env(safe-area-inset-bottom);
+    display:flex;background:rgba(251,248,243,.92);backdrop-filter:blur(14px);
+    border-top:1px solid var(--line);z-index:30;
+  }
+  .nav button{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:var(--faint);position:relative;}
+  .nav button.on{color:var(--ink);}
+  .nav button .lab{font-size:10px;font-weight:600;}
+  .nav .ndot{position:absolute;top:8px;left:50%;transform:translateX(8px);min-width:15px;height:15px;padding:0 4px;background:var(--accent);color:#fff;border-radius:8px;font-size:9px;font-weight:800;display:grid;place-items:center;}
+
+  /* ---------- misc ---------- */
+  .skel{background:linear-gradient(100deg,var(--accent-soft) 30%, #f7ece4 50%, var(--accent-soft) 70%);background-size:200% 100%;animation:sh 1.1s linear infinite;}
+  @keyframes sh{from{background-position:200% 0}to{background-position:-200% 0}}
+  .imgwrap img,.tile img,.pd-gallery img{opacity:0;transition:opacity .35s ease;}
+  .imgwrap img.ld,.tile img.ld,.pd-gallery img.ld{opacity:1;}
+  .empty-note{text-align:center;color:var(--muted);padding:60px 24px;font-size:14px;}
+  .fade-in{animation:fi .4s ease both;}
+  @keyframes fi{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .stagger > *{animation:fi .45s ease both;}
+  .stagger > *:nth-child(1){animation-delay:.02s}
+  .stagger > *:nth-child(2){animation-delay:.06s}
+  .stagger > *:nth-child(3){animation-delay:.10s}
+  .stagger > *:nth-child(4){animation-delay:.14s}
+  .stagger > *:nth-child(5){animation-delay:.18s}
+  .stagger > *:nth-child(6){animation-delay:.22s}
+  .toast{
+    position:fixed;left:50%;bottom:calc(var(--nav-h) + 22px);transform:translateX(-50%);
+    background:var(--ink);color:#f6efe2;padding:11px 20px;border-radius:999px;font-size:13.5px;font-weight:600;
+    box-shadow:var(--shadow-lg);z-index:60;animation:fi .25s ease both;max-width:90%;
+  }
+  .breadcrumb{font-size:12px;color:var(--muted);padding:10px 16px 0;}
+  .breadcrumb b{color:var(--accent);}
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+<script type="text/babel" data-presets="react">
+const { useState, useEffect, useRef, useCallback, useMemo, memo } = React;
+
+/* =========================================================================
+   CONFIG  — replace these with your real values
+   ========================================================================= */
+const CONFIG = {
+  brandName: "DOMICLE",
+  brandTagline: "פרזול · חומרי גלם · עיצוב",
+  whatsappNumber: "972500000000",   // ← מספר העסק לקבלת הזמנות (פורמט בינלאומי בלי +)
+  showPrices: false,                // ← B2B / קטלוג הזמנות. שנה ל-true כדי להציג מחירים
+  currency: "₪",
+  remoteCatalogUrl: "",             // ← (אופציונלי) URL ל-JSON של קטלוג אמיתי / Supabase. ריק = דאטה לדוגמה
+  demoCount: 3000,                  // ← כמות מוצרי דמו (להוכחת ביצועים). הסר כשמחברים דאטה אמיתית
+};
+
+/* =========================================================================
+   SAFE STORAGE  — works deployed (persists) and in sandbox (in-memory)
+   ========================================================================= */
+const store = (() => {
+  let mem = {};
+  let ok = false;
+  try { const k="__t"; localStorage.setItem(k,"1"); localStorage.removeItem(k); ok=true; } catch(e){ ok=false; }
+  return {
+    get(k, def){ try{ const v = ok ? localStorage.getItem(k) : mem[k]; return v==null?def:JSON.parse(v);}catch(e){return def;} },
+    set(k, val){ try{ const s=JSON.stringify(val); if(ok) localStorage.setItem(k,s); else mem[k]=s; }catch(e){} },
+  };
+})();
+
+/* =========================================================================
+   ICONS  (inline svg — no external lib)
+   ========================================================================= */
+const I = {
+  menu:    p => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" {...p}><path d="M4 6h16M4 12h16M4 18h16"/></svg>,
+  search:  p => <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" {...p}><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>,
+  cart:    p => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M3 3h2l2.4 12.4a2 2 0 002 1.6h7.7a2 2 0 002-1.6L22 7H6"/><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/></svg>,
+  home:    p => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>,
+  grid:    p => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" {...p}><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>,
+  rows:    p => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" {...p}><path d="M8 6h13M8 12h13M8 18h13"/><circle cx="3.5" cy="6" r="1.2"/><circle cx="3.5" cy="12" r="1.2"/><circle cx="3.5" cy="18" r="1.2"/></svg>,
+  heart:   p => <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" {...p}><path d="M12 21s-7.5-4.6-10-9.3C.4 8.4 1.7 4.7 5.2 4.1 7.4 3.7 9.3 4.8 12 7.3c2.7-2.5 4.6-3.6 6.8-3.2 3.5.6 4.8 4.3 3.2 7.6C19.5 16.4 12 21 12 21z"/></svg>,
+  heartO:  p => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" {...p}><path d="M12 21s-7.5-4.6-10-9.3C.4 8.4 1.7 4.7 5.2 4.1 7.4 3.7 9.3 4.8 12 7.3c2.7-2.5 4.6-3.6 6.8-3.2 3.5.6 4.8 4.3 3.2 7.6C19.5 16.4 12 21 12 21z"/></svg>,
+  back:    p => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M9 6l6 6-6 6"/></svg>,
+  share:   p => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>,
+  trash:   p => <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>,
+  wa:      p => <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" {...p}><path d="M12 2a10 10 0 00-8.6 15l-1.3 4.8 4.9-1.3A10 10 0 1012 2zm5.3 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .1-1.7-.1-1.1-.4-2.6-1.2-4-2.9a9.5 9.5 0 01-1.9-3c-.2-.6 0-1.1.3-1.5.2-.2.4-.4.6-.6.1-.1.2-.3.1-.5L7.8 7c-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.4-.3.3-.9.9-.9 2.2s.9 2.6 1.1 2.8c.1.2 1.8 2.9 4.5 4 .6.3 1.1.4 1.5.5.6.2 1.2.2 1.6.1.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.1-1.2 0-.1-.2-.2-.4-.3z"/></svg>,
+  cloud:   p => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M17 18a4 4 0 00.5-7.97A6 6 0 006 9a4.5 4.5 0 00-.5 9z"/></svg>,
+};
+
+/* =========================================================================
+   DEMO DATA GENERATION  (procedural — proves smoothness at scale)
+   Replace by setting CONFIG.remoteCatalogUrl, or swap buildDemoCatalog().
+   ========================================================================= */
+const CATS = [
+  { id:"hardware", name:"פרזול", subs:[
+      { id:"handles",  name:"ידיות ריהוט",        bases:["ידית מודרנית","ידית כפרית","ידית אינטגרלית","ידית פרופיל","ידית כפתור","ידית קשת"] },
+      { id:"building", name:"ידיות ופרזול בניין",  bases:["ידית בניין","צילינדר מאסטר","מנעול רב-בריח","מעצור דלת","קולב דלת"] },
+      { id:"rails",    name:"מסילות ומגירות",      bases:["מסילה טלסקופית","מסילת כדורית","מערכת מגירה Tandem","מסילת Soft-Close"] },
+      { id:"hinges",   name:"צירים ומנגנונים",     bases:["ציר סמוי 110°","ציר זווית","בולם זרוע","מנגנון הרמה Aventos","מנגנון Push"] },
+      { id:"bath",     name:"אביזרי אמבט",         bases:["מתלה מגבת","אחיזת יד","מדף זכוכית","וו תלייה","מחזיק נייר"] },
+  ]},
+  { id:"raw", name:"חומרי גלם", subs:[
+      { id:"boards",  name:"לוחות ופלטות",  bases:["לוח MDF","לוח סנדוויץ'","לוח מלמין","דיקט ליבנה","לוח OSB"] },
+      { id:"veneer",  name:"פורניר וקצוות", bases:["פורניר אלון","פורניר אגוז","סרט קצה ABS","פורניר אפור","פורניר אפוקסי"] },
+      { id:"solid",   name:"עץ מלא",        bases:["קורת אלון","לוח אגוז","עץ אורן","עץ אשור","עץ טיק"] },
+  ]},
+  { id:"glue", name:"דבקים וצבעים", subs:[
+      { id:"woodglue", name:"דבק לעץ",   bases:["Titebond Original","Titebond II","Titebond III","דבק נגרים PVA","דבק חם"] },
+      { id:"contact",  name:"דבק מגע",   bases:["דבק מגע","דבק פוליאוריתן","דבק אפוקסי דו-רכיבי","דבק סופר"] },
+      { id:"paint",    name:"צבעים וגוונים", bases:["צבע אקרילי","פיגמנט מים","גוון אוניברסלי","פריימר"] },
+  ]},
+  { id:"finish", name:"ציפויים וגימור", subs:[
+      { id:"oils",     name:"שמנים ולכות", bases:["שמן Osmo Hardwax","לכה פוליאוריתנית","שמן טבעי","ביטון מים","שלאק"] },
+      { id:"abrasive", name:"שיוף וליטוש", bases:["נייר לטש","דיסק ליטוש","ספוג שיוף","צמר פלדה","משחת ליטוש"] },
+  ]},
+  { id:"tools", name:"כלי עבודה", subs:[
+      { id:"power", name:"כלי חשמל",        bases:["מקדחה רוטטת","מסור פנדל","מלטשת אקסצנטרית","פרזולית","מקצועה חשמלית"] },
+      { id:"hand",  name:"כלי יד",          bases:["סט מברגים","מפתח אלן","פטיש נגרים","איזמל","מד זווית"] },
+      { id:"bits",  name:"מקדחים וביטים",   bases:["מקדח עץ","ביט פיליפס","כוס ניסור","מקדח פורסטנר","סט ביטים"] },
+  ]},
+  { id:"light", name:"תאורה", subs:[
+      { id:"led",   name:"פסי LED וספקים", bases:["פס LED 24V","ספק כוח מיתוג","פרופיל אלומיניום","חיישן תנועה"] },
+      { id:"spots", name:"גופי תאורה",      bases:["ספוט שקוע","ספוט תלייה","תאורת מגירה","מנורת קריאה"] },
+  ]},
+];
+
+const FINISHES = ["שחור מט","ניקל מוברש","פליז עתיק","כרום","לבן","אלון טבעי","אנתרציט"];
+const SIZES_GLUE = ["3.8L","946mL","473mL","237mL","118mL"];
+const SIZES_BOARD = ["18mm","16mm","12mm","8mm","6mm"];
+const SIZES_GEN = ["S","M","L","XL"];
+
+function variantsFor(sub){
+  if(sub==="woodglue"||sub==="contact") return SIZES_GLUE;
+  if(sub==="boards") return SIZES_BOARD;
+  if(sub==="handles"||sub==="building"||sub==="bath"||sub==="hinges") return FINISHES.slice(0,4);
+  return SIZES_GEN;
+}
+
+// deterministic small hash
+function hash(str){ let h=0; for(let i=0;i<str.length;i++){ h=(h*31 + str.charCodeAt(i))|0; } return Math.abs(h); }
+
+function buildDemoCatalog(target){
+  const categories = CATS.map(c=>({id:c.id,name:c.name}));
+  const subcategories = [];
+  CATS.forEach(c=>c.subs.forEach(s=>subcategories.push({id:s.id,categoryId:c.id,name:s.name})));
+  const products = [];
+  let n = 0;
+  // round-robin across subs until we hit target
+  const flatSubs = [];
+  CATS.forEach(c=>c.subs.forEach(s=>flatSubs.push({c,s})));
+  let idx=0;
+  while(products.length < target){
+    const { c, s } = flatSubs[idx % flatSubs.length];
+    idx++;
+    const round = Math.floor(products.length / flatSubs.length);
+    const base = s.bases[round % s.bases.length];
+    const num = 100 + (round*7 % 900);
+    const id = "p"+(++n);
+    const sku = "DMC-" + String(n).padStart(5,"0");
+    const h = hash(id);
+    const name = base + " " + (s.id==="handles"||s.id==="hinges" ? ("מק' "+num) : (h%2? "דגם "+num : "סדרה "+num));
+    const vs = variantsFor(s.id);
+    const variants = vs.slice(0, 1 + (h % vs.length)).map((label,i)=>({label, sku: sku+"-"+(i+1)}));
+    const badge = (h%13===0) ? "מבצע" : (h%17===0 ? "חדש" : null);
+    const featured = (h%23===0);
+    const price = CONFIG.showPrices ? (15 + (h%480)) : null;
+    products.push({ id, name, sku, categoryId:c.id, subcategoryId:s.id, variants, badge, featured, price });
+  }
+  return { categories, subcategories, products };
+}
+
+/* ---- procedural placeholder thumbnail (cached) ----
+   Used only when a product has no real image. Renders instantly, no network. */
+const SHAPES = {
+  hardware: "M58 96 h84 a10 10 0 0 1 0 20 h-84 a10 10 0 0 1 0-20 z M52 84 a8 8 0 1 1 0 16 a8 8 0 0 1 0-16 z M148 84 a8 8 0 1 1 0 16 a8 8 0 0 1 0-16 z",
+  raw:      "M40 70 h120 v16 h-120 z M40 96 h120 v16 h-120 z M40 122 h120 v16 h-120 z",
+  glue:     "M86 50 h28 v14 h6 v18 l8 10 v52 a8 8 0 0 1-8 8 h-50 a8 8 0 0 1-8-8 v-52 l8-10 v-18 h6 z",
+  finish:   "M120 52 l22 8 -8 22 -22-8 z M118 80 l-44 44 a14 14 0 0 1-20-20 l44-44 z M58 132 l12 12",
+  tools:    "M70 60 a26 26 0 0 1 36 36 l44 44 -16 16 -44-44 a26 26 0 0 1-20-52 z",
+  light:    "M100 48 a34 34 0 0 1 22 60 v14 h-44 v-14 a34 34 0 0 1 22-60 z M84 132 h32 M88 144 h24",
+};
+const _thumbCache = new Map();
+function thumb(p){
+  if(p.image) return p.image;            // real image (url or base64) wins
+  if(_thumbCache.has(p.id)) return _thumbCache.get(p.id);
+  const h = hash(p.id);
+  const hue = 22 + (h % 26);
+  const bg1 = `hsl(${hue},30%,${90-(h%6)}%)`;
+  const bg2 = `hsl(${hue},26%,${80-(h%8)}%)`;
+  const fg  = `hsl(${hue-4},34%,38%)`;
+  const path = SHAPES[p.categoryId] || SHAPES.hardware;
+  const svg =
+    `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'>`+
+    `<defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'>`+
+    `<stop offset='0' stop-color='${bg1}'/><stop offset='1' stop-color='${bg2}'/></linearGradient></defs>`+
+    `<rect width='200' height='200' fill='url(#g)'/>`+
+    `<path d='${path}' fill='${fg}' opacity='0.85'/></svg>`;
+  const uri = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+  _thumbCache.set(p.id, uri);
+  return uri;
+}
+
+/* =========================================================================
+   LAZY IMAGE  — skeleton + fade-in, async decode, error fallback
+   ========================================================================= */
+const LazyImg = memo(function LazyImg({ product, alt }){
+  const [loaded, setLoaded] = useState(false);
+  const src = thumb(product);
+  return (
+    <>
+      {!loaded && <div className="skel" style={{position:"absolute",inset:0}} />}
+      <img
+        src={src} alt={alt||product.name}
+        loading="lazy" decoding="async"
+        className={loaded?"ld":""}
+        onLoad={()=>setLoaded(true)}
+        onError={(e)=>{ e.currentTarget.src = thumb({ ...product, image:null, id:product.id+"_f" }); setLoaded(true); }}
+      />
+    </>
+  );
+});
+
+/* =========================================================================
+   PRODUCT CARD
+   ========================================================================= */
+const ProductCard = memo(function ProductCard({ p, mode, onOpen, isFav, onFav }){
+  return (
+    <div className={"pc"+(mode==="list"?" list":"")} onClick={()=>onOpen(p)}>
+      <div className="imgwrap">
+        <LazyImg product={p} />
+        {p.badge && <span className={"badge"+(p.badge==="חדש"?" new":"")}>{p.badge}</span>}
+        <button className={"fav"+(isFav?" on":"")} onClick={(e)=>{e.stopPropagation(); onFav(p.id);}} aria-label="מועדף">
+          {isFav ? <I.heart width="16" height="16"/> : <I.heartO width="16" height="16"/>}
+        </button>
+      </div>
+      <div className="body">
+        <div className="nm">{p.name}</div>
+        <div className="sku">{p.sku}</div>
+        {CONFIG.showPrices && p.price!=null && <div className="price">{CONFIG.currency}{p.price}</div>}
+      </div>
+    </div>
+  );
+});
+
+/* =========================================================================
+   VIRTUALIZED GRID  — windowing: only visible cells are in the DOM
+   ========================================================================= */
+function VirtualGrid({ items, mode, onOpen, favSet, onFav }){
+  const ref = useRef(null);
+  const [vp, setVp] = useState({ w:0, h:0 });
+  const [scrollTop, setScrollTop] = useState(0);
+  const raf = useRef(0);
+
+  useEffect(()=>{
+    const el = ref.current; if(!el) return;
+    const measure = ()=> setVp({ w: el.clientWidth, h: el.clientHeight });
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return ()=> ro.disconnect();
+  },[]);
+
+  // reset scroll to top when the dataset changes
+  useEffect(()=>{ if(ref.current){ ref.current.scrollTop = 0; setScrollTop(0); } }, [items, mode]);
+
+  const onScroll = useCallback((e)=>{
+    const top = e.currentTarget.scrollTop;
+    if(raf.current) return;
+    raf.current = requestAnimationFrame(()=>{ setScrollTop(top); raf.current = 0; });
+  },[]);
+
+  const pad = 16, gap = 12;
+  const innerW = Math.max(0, vp.w - pad*2);
+
+  let cols, colW, rowH;
+  if(mode==="list"){ cols=1; colW=innerW; rowH=104; }
+  else {
+    const minCol = innerW < 360 ? 150 : 168;
+    cols = Math.max(2, Math.floor((innerW + gap)/(minCol+gap)));
+    colW = cols>0 ? (innerW - gap*(cols-1))/cols : innerW;
+    rowH = colW + 84;            // square image + text block
+  }
+  const stride = rowH + gap;
+  const rows = Math.ceil(items.length / cols);
+  const totalH = rows>0 ? (rows*stride - gap + pad*2) : 0;
+
+  const buffer = 4;
+  const firstRow = Math.max(0, Math.floor((scrollTop - pad)/stride) - buffer);
+  const lastRow  = Math.min(rows, Math.ceil((scrollTop - pad + vp.h)/stride) + buffer);
+
+  const cells = [];
+  if(vp.w>0){
+    for(let r=firstRow; r<lastRow; r++){
+      for(let c=0; c<cols; c++){
+        const i = r*cols + c;
+        if(i >= items.length) break;
+        const p = items[i];
+        const right = pad + c*(colW+gap);   // RTL: c=0 sits at the right
+        const top = pad + r*stride;
+        cells.push(
+          <div key={p.id} className="vcell" style={{ right, top, width:colW, height:rowH }}>
+            <ProductCard p={p} mode={mode} onOpen={onOpen} isFav={favSet.has(p.id)} onFav={onFav} />
+          </div>
+        );
+      }
+    }
+  }
+
+  return (
+    <div className="vgrid" ref={ref} onScroll={onScroll}>
+      <div className="vgrid-inner" style={{ height: totalH }}>{cells}</div>
+    </div>
+  );
+}
+
+/* =========================================================================
+   SCREENS
+   ========================================================================= */
+function Home({ data, go, favSet, onFav }){
+  const featured = useMemo(()=> data.products.filter(p=>p.featured).slice(0,12), [data]);
+  const deals = useMemo(()=> data.products.filter(p=>p.badge==="מבצע").slice(0,12), [data]);
+  return (
+    <div className="page">
+      <div className="hero fade-in">
+        <span className="kicker">FLEX · CNC</span>
+        <h1>חיתוך לעיצוב<br/>ללא גבולות</h1>
+        <p>אלפי פריטי פרזול, חומרי גלם וגימור — במקום אחד.</p>
+        <button className="cta" onClick={()=>go({name:"category", cat:data.categories[0].id})}>לקטלוג ←</button>
+      </div>
+
+      <div className="section-h"><h2>קטגוריות</h2></div>
+      <div className="tiles stagger">
+        {data.categories.map(c=>{
+          const cover = data.products.find(p=>p.categoryId===c.id) || {id:c.id, categoryId:c.id};
+          return (
+            <div key={c.id} className="tile" onClick={()=>go({name:"category", cat:c.id})}>
+              <LazyImg product={cover} alt={c.name} />
+              <div className="ov"><b>{c.name}</b><span>{data.subcategories.filter(s=>s.categoryId===c.id).length} תת-קטגוריות</span></div>
+            </div>
+          );
+        })}
+      </div>
+
+      {deals.length>0 && <>
+        <div className="section-h"><h2>מבצעים</h2><span className="more" onClick={()=>go({name:"search", q:""})}>הכל</span></div>
+        <div className="rail">
+          {deals.map(p=> <div key={p.id} className="pc-wrap" style={{flex:"0 0 150px"}}>
+            <ProductCard p={p} mode="grid" onOpen={(pr)=>go({name:"product", product:pr})} isFav={favSet.has(p.id)} onFav={onFav} />
+          </div>)}
+        </div>
+      </>}
+
+      <div className="section-h"><h2>מומלצים</h2></div>
+      <div className="rail">
+        {featured.map(p=> <div key={p.id} style={{flex:"0 0 150px"}}>
+          <ProductCard p={p} mode="grid" onOpen={(pr)=>go({name:"product", product:pr})} isFav={favSet.has(p.id)} onFav={onFav} />
+        </div>)}
+      </div>
+      <div style={{height:24}} />
+    </div>
+  );
+}
+
+function Category({ data, activeCat, setActiveCat, go }){
+  const subs = useMemo(()=> data.subcategories.filter(s=>s.categoryId===activeCat), [data, activeCat]);
+  const counts = useMemo(()=>{
+    const m = {};
+    data.products.forEach(p=>{ m[p.subcategoryId]=(m[p.subcategoryId]||0)+1; });
+    return m;
+  },[data]);
+  return (
+    <div className="page">
+      <div style={{position:"sticky",top:0,zIndex:5,background:"var(--surface)",borderBottom:"1px solid var(--line)",paddingBottom:8}}>
+        <div className="chips">
+          {data.categories.map(c=>(
+            <button key={c.id} className={"chip"+(c.id===activeCat?" active":"")} onClick={()=>setActiveCat(c.id)}>{c.name}</button>
+          ))}
+        </div>
+      </div>
+      <div className="section-h"><h2>{data.categories.find(c=>c.id===activeCat)?.name}</h2>
+        <span className="more" onClick={()=>go({name:"list", cat:activeCat, sub:null})}>כל הפריטים</span></div>
+      <div className="tiles stagger" style={{paddingBottom:24}}>
+        {subs.map(s=>{
+          const cover = data.products.find(p=>p.subcategoryId===s.id) || {id:s.id, categoryId:activeCat};
+          return (
+            <div key={s.id} className="tile" onClick={()=>go({name:"list", cat:activeCat, sub:s.id})}>
+              <LazyImg product={cover} alt={s.name} />
+              <div className="ov"><b>{s.name}</b><span>{counts[s.id]||0} פריטים</span></div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+const SORTS = {
+  rel:  { label:"רלוונטיות", fn:null },
+  az:   { label:"א׳ → ת׳",  fn:(a,b)=>a.name.localeCompare(b.name,"he") },
+  za:   { label:"ת׳ → א׳",  fn:(a,b)=>b.name.localeCompare(a.name,"he") },
+  plo:  { label:"מחיר ↑",   fn:(a,b)=>(a.price||0)-(b.price||0) },
+  phi:  { label:"מחיר ↓",   fn:(a,b)=>(b.price||0)-(a.price||0) },
+};
+
+function ProductList({ data, params, go, favSet, onFav, mode, setMode }){
+  const [sort, setSort] = useState("rel");
+  const sub = params.sub ? data.subcategories.find(s=>s.id===params.sub) : null;
+  const cat = data.categories.find(c=>c.id===params.cat);
+
+  const items = useMemo(()=>{
+    let arr = data.products.filter(p=> p.categoryId===params.cat && (!params.sub || p.subcategoryId===params.sub));
+    const f = SORTS[sort].fn;
+    if(f) arr = [...arr].sort(f);
+    return arr;
+  },[data, params, sort]);
+
+  const sorts = CONFIG.showPrices ? ["rel","az","za","plo","phi"] : ["rel","az","za"];
+
+  return (
+    <>
+      <div className="breadcrumb"><b onClick={()=>go({name:"category", cat:params.cat})}>{cat?.name}</b>{sub? " › "+sub.name : ""}</div>
+      <div className="toolbar">
+        <div className="ttl"><b>{sub? sub.name : cat?.name}</b><span>{items.length.toLocaleString("he")} פריטים</span></div>
+        <select className="sortsel" value={sort} onChange={e=>setSort(e.target.value)}>
+          {sorts.map(k=> <option key={k} value={k}>{SORTS[k].label}</option>)}
+        </select>
+        <div className="seg">
+          <button className={mode==="grid"?"on":""} onClick={()=>setMode("grid")}><I.grid width="17" height="17"/></button>
+          <button className={mode==="list"?"on":""} onClick={()=>setMode("list")}><I.rows width="17" height="17"/></button>
+        </div>
+      </div>
+      {items.length===0
+        ? <div className="empty-note">לא נמצאו פריטים בקטגוריה זו.</div>
+        : <VirtualGrid items={items} mode={mode} favSet={favSet} onFav={onFav} onOpen={(p)=>go({name:"product", product:p})} />}
+    </>
+  );
+}
+
+function useDebounced(value, ms){
+  const [v,setV] = useState(value);
+  useEffect(()=>{ const t=setTimeout(()=>setV(value), ms); return ()=>clearTimeout(t); },[value,ms]);
+  return v;
+}
+
+function Search({ data, go, favSet, onFav, mode, setMode }){
+  const [q, setQ] = useState("");
+  const dq = useDebounced(q, 180);
+  const inputRef = useRef(null);
+  useEffect(()=>{ inputRef.current && inputRef.current.focus(); },[]);
+
+  const results = useMemo(()=>{
+    const term = dq.trim().toLowerCase();
+    if(!term) return [];
+    const words = term.split(/\s+/);
+    const out = [];
+    for(let i=0;i<data.products.length;i++){
+      const p = data.products[i];
+      const hay = (p.name + " " + p.sku).toLowerCase();
+      let ok = true;
+      for(const w of words){ if(hay.indexOf(w)===-1){ ok=false; break; } }
+      if(ok){ out.push(p); if(out.length>=2000) break; }
+    }
+    return out;
+  },[dq, data]);
+
+  return (
+    <>
+      <div className="searchbar">
+        <div className="field">
+          <I.search/>
+          <input ref={inputRef} value={q} onChange={e=>setQ(e.target.value)} placeholder="חיפוש מוצר, מק״ט, סדרה…" inputMode="search" />
+          {q && <button onClick={()=>setQ("")} style={{color:"var(--faint)",fontSize:18,padding:4}}>✕</button>}
+        </div>
+      </div>
+      {!dq.trim()
+        ? <div className="empty-note">הקלד כדי לחפש בקטלוג ({data.products.length.toLocaleString("he")} פריטים).</div>
+        : results.length===0
+          ? <div className="empty-note">אין תוצאות עבור “{dq}”.</div>
+          : <>
+              <div className="toolbar" style={{borderBottom:"1px solid var(--line)"}}>
+                <div className="ttl"><span>{results.length.toLocaleString("he")} תוצאות</span></div>
+                <div className="seg">
+                  <button className={mode==="grid"?"on":""} onClick={()=>setMode("grid")}><I.grid width="17" height="17"/></button>
+                  <button className={mode==="list"?"on":""} onClick={()=>setMode("list")}><I.rows width="17" height="17"/></button>
+                </div>
+              </div>
+              <VirtualGrid items={results} mode={mode} favSet={favSet} onFav={onFav} onOpen={(p)=>go({name:"product", product:p})} />
+            </>}
+    </>
+  );
+}
+
+function ProductDetail({ data, product, go, favSet, onFav, addToCart, toast }){
+  const [vi, setVi] = useState(0);
+  const [qty, setQty] = useState(1);
+  const cat = data.categories.find(c=>c.id===product.categoryId);
+  const sub = data.subcategories.find(s=>s.id===product.subcategoryId);
+  const isFav = favSet.has(product.id);
+
+  const share = async ()=>{
+    const txt = `${product.name} (${product.sku}) — ${CONFIG.brandName}`;
+    try{ if(navigator.share){ await navigator.share({title:product.name, text:txt}); return; } }catch(e){}
+    const wa = `https://wa.me/?text=${encodeURIComponent(txt)}`;
+    window.open(wa, "_blank");
+  };
+
+  const add = ()=>{
+    addToCart(product, product.variants[vi], qty);
+    toast(`נוסף לסל · ${qty} יח׳`);
+  };
+
+  return (
+    <>
+      <div className="page">
+        <div className="pd-gallery"><LazyImg product={product} /></div>
+        <div className="pd-thumbs">
+          {product.variants.map((v,i)=>(
+            <div key={i} className={"pd-thumb"+(i===vi?" on":"")} onClick={()=>setVi(i)}>
+              <LazyImg product={{...product, id:product.id+"_v"+i}} />
+            </div>
+          ))}
+        </div>
+        <div className="pd-info">
+          <div className="pd-cat" onClick={()=>go({name:"list", cat:product.categoryId, sub:product.subcategoryId})}>{cat?.name} › {sub?.name}</div>
+          <h1 className="pd-title">{product.name}</h1>
+          <div className="pd-sku">מק״ט: {product.variants[vi]?.sku || product.sku}</div>
+          {CONFIG.showPrices && product.price!=null && <div className="price" style={{fontSize:22,marginTop:8}}>{CONFIG.currency}{product.price}</div>}
+
+          {product.variants.length>1 && <>
+            <div className="lbl">בחירת וריאציה</div>
+            <div className="vbtns">
+              {product.variants.map((v,i)=>(
+                <button key={i} className={"vbtn"+(i===vi?" on":"")} onClick={()=>setVi(i)}>{v.label}</button>
+              ))}
+            </div>
+          </>}
+
+          <div className="lbl">כמות</div>
+          <div className="qty">
+            <button onClick={()=>setQty(q=>Math.max(1,q-1))}>−</button>
+            <b>{qty}</b>
+            <button onClick={()=>setQty(q=>q+1)}>+</button>
+          </div>
+
+          <p className="pd-desc">פריט מקטלוג {CONFIG.brandName}. זמין במלאי בכפוף לאישור הזמנה. לפרטים נוספים, מידות מדויקות וזמינות — הוסיפו לסל ושלחו הזמנה ונחזור אליכם בוואטסאפ.</p>
+        </div>
+        <div style={{height:16}} />
+      </div>
+      <div className="actionbar">
+        <button className="btn-primary" onClick={add}><I.cart width="20" height="20" stroke="#fff"/>הוסף לסל</button>
+        <button className="btn-ghost" onClick={()=>onFav(product.id)} style={isFav?{color:"var(--accent)",borderColor:"var(--accent)"}:null}>
+          {isFav? <I.heart width="20" height="20"/> : <I.heartO width="20" height="20"/>}
+        </button>
+        <button className="btn-ghost" onClick={share}><I.share/></button>
+      </div>
+    </>
+  );
+}
+
+function Favorites({ data, favSet, onFav, go, mode, setMode }){
+  const items = useMemo(()=> data.products.filter(p=>favSet.has(p.id)), [data, favSet]);
+  return (
+    <>
+      <div className="toolbar">
+        <div className="ttl"><b>מועדפים</b><span>{items.length} פריטים</span></div>
+        {items.length>0 && <div className="seg">
+          <button className={mode==="grid"?"on":""} onClick={()=>setMode("grid")}><I.grid width="17" height="17"/></button>
+          <button className={mode==="list"?"on":""} onClick={()=>setMode("list")}><I.rows width="17" height="17"/></button>
+        </div>}
+      </div>
+      {items.length===0
+        ? <div className="cart-empty"><div className="circle"><I.heartO width="34" height="34"/></div><div>עדיין אין מועדפים</div>
+            <button className="cta" style={{background:"var(--ink)",color:"#f6efe2",padding:"10px 20px",borderRadius:999,fontWeight:700}} onClick={()=>go({name:"category", cat:data.categories[0].id})}>לקטלוג</button></div>
+        : <VirtualGrid items={items} mode={mode} favSet={favSet} onFav={onFav} onOpen={(p)=>go({name:"product", product:p})} />}
+    </>
+  );
+}
+
+function Cart({ data, cart, setCart, go, toast }){
+  const items = cart;
+  const totalQty = items.reduce((s,it)=>s+it.qty,0);
+  const totalPrice = items.reduce((s,it)=>s+(it.price||0)*it.qty,0);
+
+  const setQty = (key, delta)=>{
+    setCart(c=> c.map(it=> it.key===key ? {...it, qty: Math.max(1, it.qty+delta)} : it));
+  };
+  const remove = (key)=> setCart(c=> c.filter(it=>it.key!==key));
+
+  const checkout = ()=>{
+    let msg = `שלום, ברצוני להזמין מ-${CONFIG.brandName}:\n\n`;
+    items.forEach((it,i)=>{
+      msg += `${i+1}. ${it.name}`;
+      if(it.variant) msg += ` (${it.variant})`;
+      msg += ` × ${it.qty}  [${it.sku}]`;
+      if(CONFIG.showPrices && it.price) msg += ` — ${CONFIG.currency}${it.price*it.qty}`;
+      msg += `\n`;
+    });
+    if(CONFIG.showPrices && totalPrice) msg += `\nסה״כ: ${CONFIG.currency}${totalPrice}`;
+    msg += `\n\nסה״כ ${totalQty} יחידות.`;
+    window.open(`https://wa.me/${CONFIG.whatsappNumber}?text=${encodeURIComponent(msg)}`, "_blank");
+  };
+
+  if(items.length===0) return (
+    <div className="cart-empty">
+      <div className="circle"><I.cart width="40" height="40"/></div>
+      <div>הסל שלך ריק</div>
+      <button className="cta" style={{background:"var(--ink)",color:"#f6efe2",padding:"10px 20px",borderRadius:999,fontWeight:700}} onClick={()=>go({name:"home"})}>לחנות</button>
+    </div>
+  );
+
+  return (
+    <>
+      <div className="page">
+        {items.map(it=>{
+          const p = data.products.find(x=>x.id===it.productId) || it;
+          return (
+            <div className="cart-row" key={it.key}>
+              <div className="th" onClick={()=>{ const pr=data.products.find(x=>x.id===it.productId); if(pr) go({name:"product", product:pr}); }}><LazyImg product={p} /></div>
+              <div className="info">
+                <b>{it.name}</b>
+                <span>{it.variant? it.variant+" · " : ""}{it.sku}</span>
+                {CONFIG.showPrices && it.price ? <div className="price" style={{fontSize:14}}>{CONFIG.currency}{it.price*it.qty}</div> : null}
+              </div>
+              <div className="qty" style={{transform:"scale(.82)"}}>
+                <button onClick={()=>setQty(it.key,-1)}>−</button><b>{it.qty}</b><button onClick={()=>setQty(it.key,1)}>+</button>
+              </div>
+              <button className="icon-btn" onClick={()=>remove(it.key)} style={{color:"var(--faint)"}}><I.trash/></button>
+            </div>
+          );
+        })}
+        <div style={{height:16}} />
+      </div>
+      <div className="actionbar" style={{flexDirection:"column",gap:8}}>
+        {CONFIG.showPrices && totalPrice>0 &&
+          <div style={{display:"flex",justifyContent:"space-between",width:"100%",fontWeight:800,fontSize:16}}>
+            <span>סה״כ</span><span style={{color:"var(--accent)"}}>{CONFIG.currency}{totalPrice}</span>
+          </div>}
+        <button className="btn-primary" style={{width:"100%",background:"#1f8a4c",boxShadow:"0 6px 16px rgba(31,138,76,.3)"}} onClick={checkout}>
+          <I.wa/> שליחת הזמנה בוואטסאפ
+        </button>
+      </div>
+    </>
+  );
+}
+
+/* =========================================================================
+   ROOT APP
+   ========================================================================= */
+function App(){
+  const [data, setData] = useState(null);
+  const [screen, setScreen] = useState({ name:"home" });
+  const [history, setHistory] = useState([]);
+  const [tab, setTab] = useState("home");
+  const [activeCat, setActiveCat] = useState(null);
+  const [mode, setMode] = useState(store.get("viewmode","grid"));
+  const [favs, setFavs] = useState(()=> store.get("favs", []));
+  const [cart, setCart] = useState(()=> store.get("cart", []));
+  const [toastMsg, setToastMsg] = useState(null);
+
+  const favSet = useMemo(()=> new Set(favs), [favs]);
+
+  // load catalog (remote or demo)
+  useEffect(()=>{
+    let alive = true;
+    (async ()=>{
+      let cat = null;
+      if(CONFIG.remoteCatalogUrl){
+        try{
+          const r = await fetch(CONFIG.remoteCatalogUrl);
+          cat = await r.json();
+        }catch(e){ console.warn("remote catalog failed, using demo", e); }
+      }
+      if(!cat) cat = buildDemoCatalog(CONFIG.demoCount);
+      if(alive){ setData(cat); setActiveCat(cat.categories[0].id); }
+    })();
+    return ()=>{ alive=false; };
+  },[]);
+
+  useEffect(()=> store.set("favs", favs), [favs]);
+  useEffect(()=> store.set("cart", cart), [cart]);
+  useEffect(()=> store.set("viewmode", mode), [mode]);
+
+  const toast = useCallback((m)=>{ setToastMsg(m); setTimeout(()=>setToastMsg(null), 1700); },[]);
+
+  const go = useCallback((s)=>{
+    setHistory(h=>[...h, screen]);
+    if(s.name==="category" && s.cat) setActiveCat(s.cat);
+    setScreen(s);
+    if(["home","category","search","cart","favorites"].includes(s.name)) setTab(s.name);
+  },[screen]);
+
+  const goTab = useCallback((name)=>{
+    setHistory([]);
+    setTab(name);
+    if(name==="category") setScreen({name:"category", cat: activeCat});
+    else setScreen({name});
+  },[activeCat]);
+
+  const back = useCallback(()=>{
+    setHistory(h=>{
+      if(h.length===0){ return h; }
+      const prev = h[h.length-1];
+      setScreen(prev);
+      if(["home","category","search","cart","favorites"].includes(prev.name)) setTab(prev.name);
+      return h.slice(0,-1);
+    });
+  },[]);
+
+  const onFav = useCallback((id)=>{
+    setFavs(f=> f.includes(id) ? f.filter(x=>x!==id) : [...f, id]);
+  },[]);
+
+  const addToCart = useCallback((product, variant, qty)=>{
+    const key = product.id + (variant? "|"+variant.label : "");
+    setCart(c=>{
+      const ex = c.find(it=>it.key===key);
+      if(ex) return c.map(it=> it.key===key ? {...it, qty: it.qty+qty} : it);
+      return [...c, {
+        key, productId:product.id, name:product.name,
+        sku: variant? variant.sku : product.sku,
+        variant: variant? variant.label : null,
+        price: product.price, qty,
+      }];
+    });
+  },[]);
+
+  const cartCount = cart.reduce((s,it)=>s+it.qty,0);
+
+  if(!data) return (
+    <div className="app"><div style={{flex:1,display:"grid",placeItems:"center",color:"var(--muted)"}}>
+      <div style={{textAlign:"center"}}>
+        <div className="brand" style={{marginBottom:10}}><span className="name" style={{fontSize:28}}>{CONFIG.brandName}</span><span className="tag">{CONFIG.brandTagline}</span></div>
+        <div style={{fontSize:13}}>טוען קטלוג…</div>
+      </div>
+    </div></div>
+  );
+
+  const canBack = history.length>0 && !["home"].includes(screen.name);
+
+  return (
+    <div className="app">
+      <header className="hdr">
+        {canBack
+          ? <button className="icon-btn" onClick={back}><I.back/></button>
+          : <button className="icon-btn" onClick={()=>goTab("category")}><I.menu/></button>}
+        <div className="brand" onClick={()=>goTab("home")}>
+          <span className="name">{CONFIG.brandName}</span>
+          <span className="tag">{CONFIG.brandTagline}</span>
+        </div>
+        <button className="icon-btn" onClick={()=>goTab("search")}><I.search/></button>
+        <button className="icon-btn" onClick={()=>goTab("cart")}>
+          <I.cart/>{cartCount>0 && <span className="cart-badge">{cartCount>99?"99":cartCount}</span>}
+        </button>
+      </header>
+
+      {screen.name==="home" &&
+        <Home data={data} go={go} favSet={favSet} onFav={onFav} />}
+      {screen.name==="category" &&
+        <Category data={data} activeCat={activeCat} setActiveCat={(c)=>{setActiveCat(c);}} go={go} />}
+      {screen.name==="list" &&
+        <ProductList data={data} params={screen} go={go} favSet={favSet} onFav={onFav} mode={mode} setMode={setMode} />}
+      {screen.name==="product" &&
+        <ProductDetail data={data} product={screen.product} go={go} favSet={favSet} onFav={onFav} addToCart={addToCart} toast={toast} />}
+      {screen.name==="search" &&
+        <Search data={data} go={go} favSet={favSet} onFav={onFav} mode={mode} setMode={setMode} />}
+      {screen.name==="favorites" &&
+        <Favorites data={data} favSet={favSet} onFav={onFav} go={go} mode={mode} setMode={setMode} />}
+      {screen.name==="cart" &&
+        <Cart data={data} cart={cart} setCart={setCart} go={go} toast={toast} />}
+
+      <nav className="nav">
+        <button className={tab==="home"?"on":""} onClick={()=>goTab("home")}><I.home width="22" height="22"/><span className="lab">בית</span></button>
+        <button className={tab==="category"?"on":""} onClick={()=>goTab("category")}><I.grid width="22" height="22"/><span className="lab">קטגוריות</span></button>
+        <button className={tab==="search"?"on":""} onClick={()=>goTab("search")}><I.search width="22" height="22"/><span className="lab">חיפוש</span></button>
+        <button className={tab==="favorites"?"on":""} onClick={()=>goTab("favorites")}>
+          <I.heartO width="22" height="22"/><span className="lab">מועדפים</span>
+          {favs.length>0 && <span className="ndot">{favs.length>99?"99":favs.length}</span>}
+        </button>
+        <button className={tab==="cart"?"on":""} onClick={()=>goTab("cart")}>
+          <I.cart width="22" height="22"/><span className="lab">סל</span>
+          {cartCount>0 && <span className="ndot">{cartCount>99?"99":cartCount}</span>}
+        </button>
+      </nav>
+
+      {toastMsg && <div className="toast">{toastMsg}</div>}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
