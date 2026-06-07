@@ -322,6 +322,62 @@
     width:100%;padding:13px;border-radius:14px;background:var(--ink);color:#f6efe2;
     font-size:15px;font-weight:700;font-family:inherit;border:0;cursor:pointer;
   }
+
+  /* ---- B2B: auth / account / orders / admin ---- */
+  .auth-wrap{min-height:100vh;min-height:100dvh;display:grid;place-items:center;padding:24px;background:var(--bg);}
+  .auth-card{width:100%;max-width:380px;background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:26px 22px;box-shadow:0 10px 40px rgba(0,0,0,.08);}
+  .auth-sub{text-align:center;font-size:13px;color:var(--muted);margin-bottom:20px;}
+  .auth-lbl{display:block;font-size:12.5px;font-weight:700;color:var(--muted);margin:12px 2px 5px;}
+  .auth-in{width:100%;padding:12px 13px;border:1px solid var(--line-strong);border-radius:12px;font-size:15px;font-family:inherit;background:var(--bg);box-sizing:border-box;}
+  .auth-in:focus{outline:none;border-color:var(--accent);}
+  .auth-in.mini{width:64px;padding:8px;text-align:center;}
+  textarea.auth-in{resize:vertical;}
+  .auth-err{color:#c0392b;font-size:13px;margin-top:12px;text-align:center;}
+  .auth-btn{width:100%;margin-top:18px;padding:13px;border-radius:12px;background:var(--accent);color:#fff;font-size:15px;font-weight:800;font-family:inherit;border:0;cursor:pointer;}
+  .auth-btn:disabled{opacity:.6;}
+  .auth-btn.mini{width:auto;margin:0;padding:8px 14px;font-size:13px;}
+  .auth-note{text-align:center;font-size:12px;color:var(--faint);margin-top:16px;}
+  .note-input{width:100%;padding:11px 12px;border:1px solid var(--line-strong);border-radius:11px;font-size:14px;font-family:inherit;background:var(--bg);box-sizing:border-box;}
+
+  .acc-head{display:flex;align-items:center;gap:14px;padding:18px 4px 16px;}
+  .acc-avatar{width:54px;height:54px;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center;flex:0 0 auto;}
+  .acc-name{font-family:var(--serif);font-size:19px;font-weight:900;}
+  .acc-role{font-size:13px;color:var(--muted);margin-top:2px;}
+  .acc-discount{background:#eef7f0;color:#1f8a4c;border:1px solid #cfe9d6;border-radius:12px;padding:12px 14px;font-size:14px;margin-bottom:14px;}
+  .acc-menu{display:flex;flex-direction:column;gap:10px;}
+  .acc-item{display:flex;align-items:center;gap:12px;padding:15px;border-radius:14px;border:1px solid var(--line);background:var(--surface);font-size:15px;font-weight:600;font-family:inherit;cursor:pointer;color:var(--ink);text-align:right;}
+  .acc-item.danger{color:#c0392b;}
+
+  .ord-card{border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px;background:var(--surface);}
+  .ord-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:10px;}
+  .ord-date{display:block;font-size:12px;color:var(--muted);margin-top:2px;}
+  .ord-cust{font-size:13px;font-weight:700;margin-top:4px;}
+  .ord-status{flex:0 0 auto;font-size:12px;font-weight:800;padding:5px 11px;border-radius:999px;background:var(--bg);border:1px solid var(--line-strong);}
+  .ord-status.s-pending{background:#fff5e6;color:#b9770e;border-color:#f3dcae;}
+  .ord-status.s-confirmed{background:#eaf2fb;color:#1d6fc0;border-color:#cadff5;}
+  .ord-status.s-sent{background:#eef7f0;color:#1f8a4c;border-color:#cfe9d6;}
+  .ord-status.s-cancelled{background:#fbecec;color:#c0392b;border-color:#f1cccc;}
+  .ord-items{display:flex;flex-direction:column;gap:5px;border-top:1px dashed var(--line-strong);padding-top:10px;}
+  .ord-line{display:flex;justify-content:space-between;gap:10px;font-size:13.5px;}
+  .ord-note{font-size:13px;color:var(--muted);margin-top:8px;}
+  .ord-foot{display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding-top:10px;border-top:1px solid var(--line);}
+
+  .adm-tabs{display:flex;gap:8px;margin-bottom:14px;}
+  .adm-tabs button{flex:1;padding:11px;border-radius:12px;border:1px solid var(--line-strong);background:var(--surface);font-weight:700;font-family:inherit;cursor:pointer;color:var(--muted);}
+  .adm-tabs button.on{background:var(--ink);color:#f6efe2;border-color:var(--ink);}
+  .adm-add{display:inline-flex;align-items:center;gap:6px;padding:11px 16px;border-radius:12px;background:var(--accent);color:#fff;border:0;font-weight:800;font-family:inherit;cursor:pointer;margin-bottom:14px;}
+  .adm-row{display:flex;align-items:center;gap:8px;padding:12px;border:1px solid var(--line);border-radius:13px;margin-bottom:9px;background:var(--surface);}
+  .adm-row-main{flex:1;min-width:0;}
+  .adm-row-main b{display:block;font-size:14.5px;}
+  .adm-row-main span{display:block;font-size:12px;color:var(--muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .adm-form{display:flex;flex-direction:column;}
+  .adm-form h3{font-family:var(--serif);font-size:19px;margin:4px 0 14px;}
+  .adm-form label{font-size:12.5px;font-weight:700;color:var(--muted);margin:11px 2px 5px;}
+  .adm-check{display:flex;align-items:center;gap:8px;flex-direction:row;font-weight:600;color:var(--ink);}
+  .adm-check input{width:18px;height:18px;}
+  .adm-form-btns{display:flex;gap:10px;margin-top:20px;}
+  .adm-form-btns .auth-btn{margin-top:0;}
+  .cust-ctrl{display:flex;align-items:center;gap:8px;flex:0 0 auto;font-size:13px;flex-wrap:wrap;justify-content:flex-end;}
 </style>
 </head>
 <body>
@@ -329,6 +385,7 @@
 
 <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
 <script type="text/babel" data-presets="react">
@@ -341,11 +398,45 @@ const CONFIG = {
   brandName: "catalog",
   brandTagline: "פרזול · חומרי גלם · עיצוב",
   whatsappNumber: "972542240554",   // ← מספר העסק לקבלת הזמנות (פורמט בינלאומי בלי +)
-  showPrices: false,                // ← B2B / קטלוג הזמנות. שנה ל-true כדי להציג מחירים
+  showPrices: true,                 // ← B2B: מחירים אישיים לכל לקוח מגיעים מ-Supabase
   currency: "₪",
-  remoteCatalogUrl: "",             // ← (אופציונלי) URL ל-JSON של קטלוג אמיתי / Supabase. ריק = דאטה לדוגמה
-  demoCount: 3000,                  // ← כמות מוצרי דמו (להוכחת ביצועים). הסר כשמחברים דאטה אמיתית
+  // --- Supabase (B2B backend) ---
+  supabaseUrl:     "https://hvtmnkgwvaeebyohyinu.supabase.co",
+  supabaseAnonKey: "sb_publishable_dim4HCZ_RqtqznB8SZubrw_EDyYJmA4",
 };
+
+/* =========================================================================
+   SUPABASE CLIENT
+   ========================================================================= */
+const sb = window.supabase.createClient(CONFIG.supabaseUrl, CONFIG.supabaseAnonKey);
+
+// Map DB product rows -> the shape the catalog UI expects, applying the
+// customer's discount to every price. Admin passes discountPct = 0.
+function buildCatalogFromDB(rows, discountPct){
+  const cats = [];
+  const seen = new Set();
+  const products = (rows||[]).map(r=>{
+    const cat = r.category || "כללי";
+    if(!seen.has(cat)){ seen.add(cat); cats.push({ id:cat, name:cat }); }
+    const price = Math.round((Number(r.base_price)||0) * (1 - (Number(discountPct)||0)/100));
+    return {
+      id: r.id, name: r.name, sku: r.sku || "",
+      categoryId: cat, subcategoryId: cat,
+      image: r.image_url || null,
+      description: r.description || "",
+      base_price: Number(r.base_price)||0,
+      active: r.active,
+      variants: [{ label:"", sku: r.sku || "" }],
+      badge: null, featured: false,
+      price,
+    };
+  });
+  return {
+    categories: cats.length ? cats : [{ id:"כללי", name:"כללי" }],
+    subcategories: [],
+    products,
+  };
+}
 
 /* =========================================================================
    SAFE STORAGE  — works deployed (persists) and in sandbox (in-memory)
@@ -377,6 +468,12 @@ const I = {
   trash:   p => <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>,
   wa:      p => <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" {...p}><path d="M12 2a10 10 0 00-8.6 15l-1.3 4.8 4.9-1.3A10 10 0 1012 2zm5.3 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .1-1.7-.1-1.1-.4-2.6-1.2-4-2.9a9.5 9.5 0 01-1.9-3c-.2-.6 0-1.1.3-1.5.2-.2.4-.4.6-.6.1-.1.2-.3.1-.5L7.8 7c-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.4-.3.3-.9.9-.9 2.2s.9 2.6 1.1 2.8c.1.2 1.8 2.9 4.5 4 .6.3 1.1.4 1.5.5.6.2 1.2.2 1.6.1.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.1-1.2 0-.1-.2-.2-.4-.3z"/></svg>,
   cloud:   p => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M17 18a4 4 0 00.5-7.97A6 6 0 006 9a4.5 4.5 0 00-.5 9z"/></svg>,
+  user:    p => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>,
+  box:     p => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg>,
+  gear:    p => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.6 1.6 0 00-1.8-.3 1.6 1.6 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.6 1.6 0 00-1-1.5 1.6 1.6 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.6 1.6 0 00.3-1.8 1.6 1.6 0 00-1.5-1H3a2 2 0 110-4h.1a1.6 1.6 0 001.5-1 1.6 1.6 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.6 1.6 0 001.8.3H9a1.6 1.6 0 001-1.5V3a2 2 0 114 0v.1a1.6 1.6 0 001 1.5 1.6 1.6 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.6 1.6 0 00-.3 1.8V9a1.6 1.6 0 001.5 1H21a2 2 0 110 4h-.1a1.6 1.6 0 00-1.5 1z"/></svg>,
+  logout:  p => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>,
+  plus:    p => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" {...p}><path d="M12 5v14M5 12h14"/></svg>,
+  edit:    p => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg>,
 };
 
 /* =========================================================================
@@ -624,10 +721,11 @@ function Home({ data, go, favSet, onFav }){
       <div className="tiles stagger">
         {data.categories.map(c=>{
           const cover = data.products.find(p=>p.categoryId===c.id) || {id:c.id, categoryId:c.id};
+          const count = data.products.filter(p=>p.categoryId===c.id).length;
           return (
             <div key={c.id} className="tile" onClick={()=>go({name:"category", cat:c.id})}>
               <LazyImg product={cover} alt={c.name} />
-              <div className="ov"><b>{c.name}</b><span>{data.subcategories.filter(s=>s.categoryId===c.id).length} תת-קטגוריות</span></div>
+              <div className="ov"><b>{c.name}</b><span>{count} פריטים</span></div>
             </div>
           );
         })}
@@ -642,12 +740,14 @@ function Home({ data, go, favSet, onFav }){
         </div>
       </>}
 
-      <div className="section-h"><h2>מומלצים</h2></div>
-      <div className="rail">
-        {featured.map(p=> <div key={p.id} style={{flex:"0 0 150px"}}>
-          <ProductCard p={p} mode="grid" onOpen={(pr)=>go({name:"product", product:pr})} isFav={favSet.has(p.id)} onFav={onFav} />
-        </div>)}
-      </div>
+      {featured.length>0 && <>
+        <div className="section-h"><h2>מומלצים</h2></div>
+        <div className="rail">
+          {featured.map(p=> <div key={p.id} style={{flex:"0 0 150px"}}>
+            <ProductCard p={p} mode="grid" onOpen={(pr)=>go({name:"product", product:pr})} isFav={favSet.has(p.id)} onFav={onFav} />
+          </div>)}
+        </div>
+      </>}
       <div style={{height:24}} />
     </div>
   );
@@ -813,7 +913,7 @@ function ProductDetail({ data, product, go, favSet, onFav, addToCart, toast }){
           ))}
         </div>
         <div className="pd-info">
-          <div className="pd-cat" onClick={()=>go({name:"list", cat:product.categoryId, sub:product.subcategoryId})}>{cat?.name} › {sub?.name}</div>
+          <div className="pd-cat" onClick={()=>go({name:"list", cat:product.categoryId, sub:product.subcategoryId})}>{cat?.name}{sub?.name? " › "+sub.name : ""}</div>
           <h1 className="pd-title">{product.name}</h1>
           <div className="pd-sku">מק״ט: {product.variants[vi]?.sku || product.sku}</div>
           {CONFIG.showPrices && product.price!=null && <div className="price" style={{fontSize:22,marginTop:8}}>{CONFIG.currency}{product.price}</div>}
@@ -868,8 +968,11 @@ function Favorites({ data, favSet, onFav, go, mode, setMode }){
   );
 }
 
-function Cart({ data, cart, setCart, go, toast }){
+function Cart({ data, cart, setCart, go, toast, session, profile }){
   const items = cart;
+  const [note, setNote] = useState("");
+  const [saving, setSaving] = useState(false);
+  const isAdmin = profile.role === "admin";
   const totalQty = items.reduce((s,it)=>s+it.qty,0);
   const totalPrice = items.reduce((s,it)=>s+(it.price||0)*it.qty,0);
 
@@ -878,7 +981,7 @@ function Cart({ data, cart, setCart, go, toast }){
   };
   const remove = (key)=> setCart(c=> c.filter(it=>it.key!==key));
 
-  const checkout = ()=>{
+  const waMessage = ()=>{
     let msg = `שלום, ברצוני להזמין מ-${CONFIG.brandName}:\n\n`;
     items.forEach((it,i)=>{
       msg += `${i+1}. ${it.name}`;
@@ -889,7 +992,34 @@ function Cart({ data, cart, setCart, go, toast }){
     });
     if(CONFIG.showPrices && totalPrice) msg += `\nסה״כ: ${CONFIG.currency}${totalPrice}`;
     msg += `\n\nסה״כ ${totalQty} יחידות.`;
-    window.open(`https://wa.me/${CONFIG.whatsappNumber}?text=${encodeURIComponent(msg)}`, "_blank");
+    if(note.trim()) msg += `\nהערה: ${note.trim()}`;
+    msg += `\n\n(${profile.business_name||""})`;
+    return msg;
+  };
+
+  // Persist the order to Supabase, then hand off to WhatsApp.
+  const checkout = async ()=>{
+    if(saving) return;
+    setSaving(true);
+    try{
+      const { data: order, error: oErr } = await sb.from("orders")
+        .insert({ customer_id: session.user.id, note: note.trim()||null, channel:"whatsapp", status:"pending" })
+        .select().single();
+      if(oErr) throw oErr;
+      const rows = items.map(it=>({
+        order_id: order.id, product_id: it.productId, name: it.name,
+        sku: it.sku||null, variant: it.variant||null, qty: it.qty,
+      }));
+      const { error: iErr } = await sb.from("order_items").insert(rows);
+      if(iErr) throw iErr;
+      window.open(`https://wa.me/${CONFIG.whatsappNumber}?text=${encodeURIComponent(waMessage())}`, "_blank");
+      setCart([]);
+      toast("ההזמנה נשלחה ונשמרה ✓");
+      go({ name:"orders" });
+    }catch(e){
+      console.error(e);
+      toast("שגיאה בשמירת ההזמנה");
+    }finally{ setSaving(false); }
   };
 
   if(items.length===0) return (
@@ -923,12 +1053,13 @@ function Cart({ data, cart, setCart, go, toast }){
         <div style={{height:16}} />
       </div>
       <div className="actionbar" style={{flexDirection:"column",gap:8}}>
+        <input className="note-input" value={note} onChange={e=>setNote(e.target.value)} placeholder="הערה להזמנה (אופציונלי)…" />
         {CONFIG.showPrices && totalPrice>0 &&
           <div style={{display:"flex",justifyContent:"space-between",width:"100%",fontWeight:800,fontSize:16}}>
             <span>סה״כ</span><span style={{color:"var(--accent)"}}>{CONFIG.currency}{totalPrice}</span>
           </div>}
-        <button className="btn-primary" style={{width:"100%",background:"#1f8a4c",boxShadow:"0 6px 16px rgba(31,138,76,.3)"}} onClick={checkout}>
-          <I.wa/> שליחת הזמנה בוואטסאפ
+        <button className="btn-primary" disabled={saving} style={{width:"100%",background:"#1f8a4c",boxShadow:"0 6px 16px rgba(31,138,76,.3)",opacity:saving?.6:1}} onClick={checkout}>
+          <I.wa/> {saving ? "שולח…" : "שליחת הזמנה בוואטסאפ"}
         </button>
       </div>
     </>
@@ -1033,7 +1164,8 @@ function InstallBanner(){
 /* =========================================================================
    ROOT APP
    ========================================================================= */
-function App(){
+function App({ session, profile }){
+  const isAdmin = profile.role === "admin";
   const [data, setData] = useState(null);
   const [screen, setScreen] = useState({ name:"home" });
   const [history, setHistory] = useState([]);
@@ -1043,25 +1175,24 @@ function App(){
   const [favs, setFavs] = useState(()=> store.get("favs", []));
   const [cart, setCart] = useState(()=> store.get("cart", []));
   const [toastMsg, setToastMsg] = useState(null);
+  const [reloadKey, setReloadKey] = useState(0);
+  const reloadData = useCallback(()=> setReloadKey(k=>k+1), []);
 
   const favSet = useMemo(()=> new Set(favs), [favs]);
 
-  // load catalog (remote or demo)
+  // load catalog from Supabase (per-customer pricing; admin sees list prices)
   useEffect(()=>{
     let alive = true;
     (async ()=>{
-      let cat = null;
-      if(CONFIG.remoteCatalogUrl){
-        try{
-          const r = await fetch(CONFIG.remoteCatalogUrl);
-          cat = await r.json();
-        }catch(e){ console.warn("remote catalog failed, using demo", e); }
-      }
-      if(!cat) cat = buildDemoCatalog(CONFIG.demoCount);
+      let q = sb.from("products").select("*").order("category").order("name");
+      if(!isAdmin) q = q.eq("active", true);
+      const { data: rows, error } = await q;
+      if(error) console.warn("products load failed", error);
+      const cat = buildCatalogFromDB(rows||[], isAdmin ? 0 : (profile.discount_pct||0));
       if(alive){ setData(cat); setActiveCat(cat.categories[0].id); }
     })();
     return ()=>{ alive=false; };
-  },[]);
+  },[profile, isAdmin, reloadKey]);
 
   useEffect(()=> store.set("favs", favs), [favs]);
   useEffect(()=> store.set("cart", cart), [cart]);
@@ -1135,6 +1266,7 @@ function App(){
           <span className="name">{CONFIG.brandName}</span>
           <span className="tag">{CONFIG.brandTagline}</span>
         </div>
+        <button className="icon-btn" onClick={()=>go({name:"account"})}><I.user/></button>
         <button className="icon-btn" onClick={()=>goTab("search")}><I.search/></button>
         <button className="icon-btn" onClick={()=>goTab("cart")}>
           <I.cart/>{cartCount>0 && <span className="cart-badge">{cartCount>99?"99":cartCount}</span>}
@@ -1154,7 +1286,13 @@ function App(){
       {screen.name==="favorites" &&
         <Favorites data={data} favSet={favSet} onFav={onFav} go={go} mode={mode} setMode={setMode} />}
       {screen.name==="cart" &&
-        <Cart data={data} cart={cart} setCart={setCart} go={go} toast={toast} />}
+        <Cart data={data} cart={cart} setCart={setCart} go={go} toast={toast} session={session} profile={profile} />}
+      {screen.name==="account" &&
+        <Account profile={profile} isAdmin={isAdmin} go={go} />}
+      {screen.name==="orders" &&
+        <Orders isAdmin={isAdmin} go={go} />}
+      {screen.name==="admin" && isAdmin &&
+        <Admin go={go} toast={toast} reloadData={reloadData} />}
 
       <nav className="nav">
         <button className={tab==="home"?"on":""} onClick={()=>goTab("home")}><I.home width="22" height="22"/><span className="lab">בית</span></button>
@@ -1175,7 +1313,290 @@ function App(){
   );
 }
 
-ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+/* =========================================================================
+   AUTH + ACCOUNT + ORDERS + ADMIN  (B2B layer)
+   ========================================================================= */
+function Splash(){
+  return (
+    <div className="app"><div style={{flex:1,display:"grid",placeItems:"center",color:"var(--muted)"}}>
+      <div style={{textAlign:"center"}}>
+        <div className="brand" style={{marginBottom:10}}><span className="name" style={{fontSize:28}}>{CONFIG.brandName}</span><span className="tag">{CONFIG.brandTagline}</span></div>
+        <div style={{fontSize:13}}>טוען…</div>
+      </div>
+    </div></div>
+  );
+}
+
+function Login(){
+  const [email,setEmail]=useState("");
+  const [pass,setPass]=useState("");
+  const [err,setErr]=useState("");
+  const [busy,setBusy]=useState(false);
+  const submit = async (e)=>{
+    e.preventDefault();
+    setErr(""); setBusy(true);
+    const { error } = await sb.auth.signInWithPassword({ email:email.trim(), password:pass });
+    if(error) setErr("אימייל או סיסמה שגויים");
+    setBusy(false);
+  };
+  return (
+    <div className="auth-wrap">
+      <form className="auth-card" onSubmit={submit}>
+        <div className="brand" style={{justifyContent:"center",marginBottom:6}}>
+          <span className="name" style={{fontSize:30}}>{CONFIG.brandName}</span>
+        </div>
+        <div className="auth-sub">כניסת לקוחות · {CONFIG.brandTagline}</div>
+        <label className="auth-lbl">אימייל</label>
+        <input className="auth-in" type="email" value={email} onChange={e=>setEmail(e.target.value)} autoComplete="username" dir="ltr" required />
+        <label className="auth-lbl">סיסמה</label>
+        <input className="auth-in" type="password" value={pass} onChange={e=>setPass(e.target.value)} autoComplete="current-password" dir="ltr" required />
+        {err && <div className="auth-err">{err}</div>}
+        <button className="auth-btn" type="submit" disabled={busy}>{busy?"מתחבר…":"כניסה"}</button>
+        <div className="auth-note">אין לך חשבון? פנה לבעל העסק לפתיחת חשבון.</div>
+      </form>
+    </div>
+  );
+}
+
+function Account({ profile, isAdmin, go }){
+  const logout = async ()=>{ await sb.auth.signOut(); };
+  return (
+    <div className="page">
+      <div className="acc-head">
+        <div className="acc-avatar"><I.user width="30" height="30"/></div>
+        <div>
+          <div className="acc-name">{profile.business_name || profile.email}</div>
+          <div className="acc-role">{isAdmin ? "בעל העסק · ניהול" : (profile.contact_name||profile.email)}</div>
+        </div>
+      </div>
+      {!isAdmin && Number(profile.discount_pct)>0 &&
+        <div className="acc-discount">ההנחה הקבועה שלך: <b>{Number(profile.discount_pct)}%</b></div>}
+      <div className="acc-menu">
+        <button className="acc-item" onClick={()=>go({name:"orders"})}><I.box/><span>{isAdmin?"כל ההזמנות":"ההזמנות שלי"}</span></button>
+        {isAdmin && <button className="acc-item" onClick={()=>go({name:"admin"})}><I.gear/><span>ניהול חנות</span></button>}
+        <button className="acc-item danger" onClick={logout}><I.logout/><span>התנתקות</span></button>
+      </div>
+    </div>
+  );
+}
+
+const STATUS = { pending:"ממתינה", confirmed:"אושרה", sent:"נשלחה", cancelled:"בוטלה" };
+function Orders({ isAdmin, go }){
+  const [orders,setOrders]=useState(null);
+  const load = useCallback(async ()=>{
+    const { data, error } = await sb.from("orders")
+      .select("id,created_at,total,status,note,channel, order_items(name,sku,variant,qty,unit_price,line_total), customer:profiles(business_name)")
+      .order("created_at",{ascending:false});
+    if(error) console.warn(error);
+    setOrders(data||[]);
+  },[]);
+  useEffect(()=>{ load(); },[load]);
+  const setStatus = async (id,status)=>{ await sb.from("orders").update({status}).eq("id",id); load(); };
+  if(orders===null) return <div className="empty-note">טוען הזמנות…</div>;
+  if(orders.length===0) return (
+    <div className="cart-empty"><div className="circle"><I.box width="34" height="34"/></div><div>אין הזמנות עדיין</div></div>
+  );
+  return (
+    <div className="page">
+      <div className="section-h"><h2>{isAdmin?"כל ההזמנות":"ההזמנות שלי"}</h2></div>
+      {orders.map(o=>(
+        <div className="ord-card" key={o.id}>
+          <div className="ord-top">
+            <div>
+              <b>#{o.id.slice(0,8)}</b>
+              <span className="ord-date">{new Date(o.created_at).toLocaleDateString("he-IL")} · {new Date(o.created_at).toLocaleTimeString("he-IL",{hour:'2-digit',minute:'2-digit'})}</span>
+              {isAdmin && o.customer && <div className="ord-cust">{o.customer.business_name}</div>}
+            </div>
+            <span className={"ord-status s-"+o.status}>{STATUS[o.status]||o.status}</span>
+          </div>
+          <div className="ord-items">
+            {(o.order_items||[]).map((it,i)=>(
+              <div className="ord-line" key={i}>
+                <span>{it.name}{it.variant?` (${it.variant})`:""} × {it.qty}</span>
+                <span>{CONFIG.currency}{Math.round(it.line_total)}</span>
+              </div>
+            ))}
+          </div>
+          {o.note && <div className="ord-note">הערה: {o.note}</div>}
+          <div className="ord-foot">
+            <b>סה״כ: {CONFIG.currency}{Math.round(o.total)}</b>
+            {isAdmin &&
+              <select className="sortsel" value={o.status} onChange={e=>setStatus(o.id,e.target.value)}>
+                {Object.keys(STATUS).map(k=><option key={k} value={k}>{STATUS[k]}</option>)}
+              </select>}
+          </div>
+        </div>
+      ))}
+      <div style={{height:20}}/>
+    </div>
+  );
+}
+
+function Admin({ go, toast, reloadData }){
+  const [tab,setTab]=useState("products");
+  return (
+    <div className="page">
+      <div className="adm-tabs">
+        <button className={tab==="products"?"on":""} onClick={()=>setTab("products")}>מוצרים</button>
+        <button className={tab==="customers"?"on":""} onClick={()=>setTab("customers")}>לקוחות</button>
+      </div>
+      {tab==="products" ? <AdminProducts toast={toast} reloadData={reloadData}/> : <AdminCustomers toast={toast}/>}
+    </div>
+  );
+}
+
+const emptyProduct = { name:"", sku:"", category:"", base_price:"", image_url:"", description:"", active:true };
+function AdminProducts({ toast, reloadData }){
+  const [rows,setRows]=useState(null);
+  const [edit,setEdit]=useState(null);
+  const load = useCallback(async ()=>{
+    const { data } = await sb.from("products").select("*").order("category").order("name");
+    setRows(data||[]);
+  },[]);
+  useEffect(()=>{ load(); },[load]);
+  const save = async ()=>{
+    const p = { ...edit, base_price: Number(edit.base_price)||0 };
+    let res;
+    if(p.id){ const { id, created_at, ...upd } = p; res = await sb.from("products").update(upd).eq("id",p.id); }
+    else { const { id, ...ins } = p; res = await sb.from("products").insert(ins); }
+    if(res.error){ toast("שגיאה בשמירה"); return; }
+    setEdit(null); load(); reloadData(); toast("נשמר ✓");
+  };
+  const del = async (id)=>{
+    if(!confirm("למחוק מוצר זה?")) return;
+    await sb.from("products").delete().eq("id",id);
+    load(); reloadData();
+  };
+  if(rows===null) return <div className="empty-note">טוען…</div>;
+  if(edit) return <ProductForm value={edit} setValue={setEdit} onSave={save} onCancel={()=>setEdit(null)} />;
+  return (
+    <>
+      <button className="adm-add" onClick={()=>setEdit({...emptyProduct})}><I.plus/> מוצר חדש</button>
+      {rows.map(p=>(
+        <div className="adm-row" key={p.id}>
+          <div className="adm-row-main">
+            <b>{p.name}</b>
+            <span>{p.sku} · {p.category||"—"} · {CONFIG.currency}{Math.round(p.base_price)}{!p.active && " · כבוי"}</span>
+          </div>
+          <button className="icon-btn" onClick={()=>setEdit({...p, base_price:String(p.base_price)})}><I.edit/></button>
+          <button className="icon-btn" onClick={()=>del(p.id)} style={{color:"var(--faint)"}}><I.trash/></button>
+        </div>
+      ))}
+      <div style={{height:20}}/>
+    </>
+  );
+}
+
+function ProductForm({ value, setValue, onSave, onCancel }){
+  const set=(k,v)=>setValue(o=>({...o,[k]:v}));
+  return (
+    <div className="adm-form">
+      <h3>{value.id?"עריכת מוצר":"מוצר חדש"}</h3>
+      <label>שם</label><input className="auth-in" value={value.name} onChange={e=>set("name",e.target.value)} />
+      <label>מק״ט</label><input className="auth-in" value={value.sku} onChange={e=>set("sku",e.target.value)} dir="ltr" />
+      <label>קטגוריה</label><input className="auth-in" value={value.category} onChange={e=>set("category",e.target.value)} />
+      <label>מחיר בסיס (₪)</label><input className="auth-in" type="number" value={value.base_price} onChange={e=>set("base_price",e.target.value)} dir="ltr" />
+      <label>קישור לתמונה</label><input className="auth-in" value={value.image_url} onChange={e=>set("image_url",e.target.value)} dir="ltr" placeholder="https://…" />
+      <label>תיאור</label><textarea className="auth-in" rows="2" value={value.description} onChange={e=>set("description",e.target.value)} />
+      <label className="adm-check"><input type="checkbox" checked={value.active} onChange={e=>set("active",e.target.checked)} /> פעיל (מוצג ללקוחות)</label>
+      <div className="adm-form-btns">
+        <button className="auth-btn" onClick={onSave}>שמירה</button>
+        <button className="btn-ghost" onClick={onCancel}>ביטול</button>
+      </div>
+    </div>
+  );
+}
+
+const emptyCustomer = { email:"", password:"", business_name:"", contact_name:"", phone:"", discount_pct:"0" };
+function AdminCustomers({ toast }){
+  const [rows,setRows]=useState(null);
+  const [adding,setAdding]=useState(null);
+  const [busy,setBusy]=useState(false);
+  const load = useCallback(async ()=>{
+    const { data } = await sb.from("profiles").select("*").eq("role","customer").order("business_name");
+    setRows(data||[]);
+  },[]);
+  useEffect(()=>{ load(); },[load]);
+  const saveCustomer = async (id, pct, active)=>{
+    await sb.from("profiles").update({ discount_pct:Number(pct)||0, active }).eq("id",id);
+    load(); toast("עודכן ✓");
+  };
+  const createCustomer = async ()=>{
+    if(busy) return;
+    setBusy(true);
+    const { data, error } = await sb.functions.invoke("create-customer", {
+      body: { ...adding, discount_pct: Number(adding.discount_pct)||0 },
+    });
+    setBusy(false);
+    if(error || (data && data.error)){ toast("שגיאה: "+((data&&data.error)||error.message)); return; }
+    setAdding(null); load(); toast("לקוח נוצר ✓");
+  };
+  if(rows===null) return <div className="empty-note">טוען…</div>;
+  if(adding) return (
+    <div className="adm-form">
+      <h3>לקוח חדש</h3>
+      <label>אימייל (לכניסה)</label><input className="auth-in" type="email" value={adding.email} onChange={e=>setAdding(o=>({...o,email:e.target.value}))} dir="ltr" />
+      <label>סיסמה ראשונית</label><input className="auth-in" value={adding.password} onChange={e=>setAdding(o=>({...o,password:e.target.value}))} dir="ltr" />
+      <label>שם העסק</label><input className="auth-in" value={adding.business_name} onChange={e=>setAdding(o=>({...o,business_name:e.target.value}))} />
+      <label>איש קשר</label><input className="auth-in" value={adding.contact_name} onChange={e=>setAdding(o=>({...o,contact_name:e.target.value}))} />
+      <label>טלפון</label><input className="auth-in" value={adding.phone} onChange={e=>setAdding(o=>({...o,phone:e.target.value}))} dir="ltr" />
+      <label>אחוז הנחה (%)</label><input className="auth-in" type="number" value={adding.discount_pct} onChange={e=>setAdding(o=>({...o,discount_pct:e.target.value}))} dir="ltr" />
+      <div className="adm-form-btns">
+        <button className="auth-btn" disabled={busy} onClick={createCustomer}>{busy?"יוצר…":"יצירת לקוח"}</button>
+        <button className="btn-ghost" onClick={()=>setAdding(null)}>ביטול</button>
+      </div>
+    </div>
+  );
+  return (
+    <>
+      <button className="adm-add" onClick={()=>setAdding({...emptyCustomer})}><I.plus/> לקוח חדש</button>
+      {rows.map(c=> <CustomerRow key={c.id} c={c} onSave={saveCustomer} />)}
+      <div style={{height:20}}/>
+    </>
+  );
+}
+
+function CustomerRow({ c, onSave }){
+  const [pct,setPct]=useState(String(c.discount_pct));
+  const [active,setActive]=useState(c.active);
+  return (
+    <div className="adm-row">
+      <div className="adm-row-main">
+        <b>{c.business_name||c.email}</b>
+        <span>{c.email}{c.contact_name?` · ${c.contact_name}`:""}{c.phone?` · ${c.phone}`:""}</span>
+      </div>
+      <div className="cust-ctrl">
+        <input className="auth-in mini" type="number" value={pct} onChange={e=>setPct(e.target.value)} dir="ltr" />
+        <span>%</span>
+        <label className="adm-check"><input type="checkbox" checked={active} onChange={e=>setActive(e.target.checked)} /> פעיל</label>
+        <button className="auth-btn mini" onClick={()=>onSave(c.id,pct,active)}>שמור</button>
+      </div>
+    </div>
+  );
+}
+
+function Root(){
+  const [session,setSession]=useState(undefined);
+  const [profile,setProfile]=useState(null);
+  useEffect(()=>{
+    sb.auth.getSession().then(({data})=>setSession(data.session||null));
+    const { data:sub } = sb.auth.onAuthStateChange((_e,s)=>setSession(s||null));
+    return ()=> sub.subscription.unsubscribe();
+  },[]);
+  useEffect(()=>{
+    if(!session){ setProfile(null); return; }
+    let alive=true;
+    sb.from("profiles").select("*").eq("id",session.user.id).single()
+      .then(({data})=>{ if(alive) setProfile(data); });
+    return ()=>{ alive=false; };
+  },[session]);
+  if(session===undefined) return <Splash/>;
+  if(!session) return <Login/>;
+  if(!profile) return <Splash/>;
+  return <App session={session} profile={profile} />;
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<Root/>);
 </script>
 </body>
 </html>

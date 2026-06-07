@@ -245,3 +245,14 @@ create policy oi_insert on public.order_items
   for insert with check (
     exists (select 1 from public.orders o where o.id = order_items.order_id and o.customer_id = auth.uid())
   );
+
+-- ---------------------------------------------------------------------------
+-- HARDENING
+--   Trigger functions must never be callable directly through the PostgREST
+--   RPC API. They still fire as triggers (which run as the table owner, not
+--   the calling role). is_admin() is intentionally left executable because the
+--   RLS policies above call it on every request.
+-- ---------------------------------------------------------------------------
+revoke execute on function public.handle_new_user()      from public, anon, authenticated;
+revoke execute on function public.set_order_item_price()  from public, anon, authenticated;
+revoke execute on function public.recompute_order_total() from public, anon, authenticated;
