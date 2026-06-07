@@ -1180,7 +1180,7 @@ function App({ session, profile }){
 
   const favSet = useMemo(()=> new Set(favs), [favs]);
 
-  // load catalog from Supabase (per-customer pricing; admin sees list prices)
+  // load catalog from Supabase; fall back to demo catalog when DB is empty
   useEffect(()=>{
     let alive = true;
     (async ()=>{
@@ -1188,8 +1188,15 @@ function App({ session, profile }){
       if(!isAdmin) q = q.eq("active", true);
       const { data: rows, error } = await q;
       if(error) console.warn("products load failed", error);
-      const cat = buildCatalogFromDB(rows||[], isAdmin ? 0 : (profile.discount_pct||0));
-      if(alive){ setData(cat); setActiveCat(cat.categories[0].id); }
+      const cat = (rows && rows.length > 0)
+        ? buildCatalogFromDB(rows, isAdmin ? 0 : (profile.discount_pct||0))
+        : buildDemoCatalog(60);
+      if(alive){
+        setData(cat);
+        setActiveCat(cat.categories[0].id);
+        const validIds = new Set(cat.products.map(p=>p.id));
+        setFavs(f => f.filter(id => validIds.has(id)));
+      }
     })();
     return ()=>{ alive=false; };
   },[profile, isAdmin, reloadKey]);
