@@ -411,14 +411,19 @@ const CONFIG = {
 const sb = window.supabase.createClient(CONFIG.supabaseUrl, CONFIG.supabaseAnonKey);
 
 // Map DB product rows -> the shape the catalog UI expects, applying the
-// customer's discount to every price. Admin passes discountPct = 0.
-function buildCatalogFromDB(rows, discountPct){
+// customer's pricing to every price. Admin and guests pass discountPct = 0.
+// priceOverrides: { [product_id]: custom_price } — admin-assigned price quote
+// per customer that wins over the percentage discount.
+function buildCatalogFromDB(rows, discountPct, priceOverrides){
   const cats = [];
   const seen = new Set();
   const products = (rows||[]).map(r=>{
     const cat = r.category || "כללי";
     if(!seen.has(cat)){ seen.add(cat); cats.push({ id:cat, name:cat }); }
-    const price = Math.round((Number(r.base_price)||0) * (1 - (Number(discountPct)||0)/100));
+    const override = priceOverrides ? priceOverrides[r.id] : undefined;
+    const price = override!=null
+      ? Math.round(Number(override))
+      : Math.round((Number(r.base_price)||0) * (1 - (Number(discountPct)||0)/100));
     return {
       id: r.id, name: r.name, sku: r.sku || "",
       categoryId: cat, subcategoryId: cat,
@@ -968,7 +973,7 @@ function Favorites({ data, favSet, onFav, go, mode, setMode }){
   );
 }
 
-function Cart({ data, cart, setCart, go, toast, session, profile }){
+function Cart({ data, cart, setCart, go, toast, session, profile, isGuest }){
   const items = cart;
   const [note, setNote] = useState("");
   const [saving, setSaving] = useState(false);
@@ -993,13 +998,21 @@ function Cart({ data, cart, setCart, go, toast, session, profile }){
     if(CONFIG.showPrices && totalPrice) msg += `\nסה״כ: ${CONFIG.currency}${totalPrice}`;
     msg += `\n\nסה״כ ${totalQty} יחידות.`;
     if(note.trim()) msg += `\nהערה: ${note.trim()}`;
-    msg += `\n\n(${profile.business_name||""})`;
+    if(!isGuest && profile.business_name) msg += `\n\n(${profile.business_name})`;
     return msg;
   };
 
-  // Persist the order to Supabase, then hand off to WhatsApp.
+  // Logged-in customers: persist the order to Supabase, then hand off to
+  // WhatsApp. Guests: WhatsApp only (RLS blocks anonymous order rows anyway).
   const checkout = async ()=>{
     if(saving) return;
+    if(isGuest){
+      window.open(`https://wa.me/${CONFIG.whatsappNumber}?text=${encodeURIComponent(waMessage())}`, "_blank");
+      setCart([]);
+      toast("ההזמנה נשלחה בוואטסאפ ✓");
+      go({ name:"home" });
+      return;
+    }
     setSaving(true);
     try{
       const { data: order, error: oErr } = await sb.from("orders")
@@ -1053,6 +1066,10 @@ function Cart({ data, cart, setCart, go, toast, session, profile }){
         <div style={{height:16}} />
       </div>
       <div className="actionbar" style={{flexDirection:"column",gap:8}}>
+        {isGuest &&
+          <div style={{fontSize:12.5,color:"var(--muted)",textAlign:"center",width:"100%"}}>
+            לקוח עסקי? <b style={{color:"var(--accent)",cursor:"pointer"}} onClick={()=>go({name:"login"})}>התחבר</b> כדי להזמין עם המחירון האישי שלך
+          </div>}
         <input className="note-input" value={note} onChange={e=>setNote(e.target.value)} placeholder="הערה להזמנה (אופציונלי)…" />
         {CONFIG.showPrices && totalPrice>0 &&
           <div style={{display:"flex",justifyContent:"space-between",width:"100%",fontWeight:800,fontSize:16}}>
@@ -1166,6 +1183,7 @@ function InstallBanner(){
    ========================================================================= */
 function App({ session, profile }){
   const isAdmin = profile.role === "admin";
+  const isGuest = !session;
   const [data, setData] = useState(null);
   const [screen, setScreen] = useState({ name:"home" });
   const [history, setHistory] = useState([]);
@@ -1180,7 +1198,9 @@ function App({ session, profile }){
 
   const favSet = useMemo(()=> new Set(favs), [favs]);
 
-  // load catalog from Supabase (per-customer pricing; admin sees list prices)
+  // load catalog from Supabase.
+  // guests + admin see list prices; customers see discount_pct pricing plus
+  // any per-product custom prices the admin assigned to them.
   useEffect(()=>{
     let alive = true;
     (async ()=>{
@@ -1188,11 +1208,21 @@ function App({ session, profile }){
       if(!isAdmin) q = q.eq("active", true);
       const { data: rows, error } = await q;
       if(error) console.warn("products load failed", error);
-      const cat = buildCatalogFromDB(rows||[], isAdmin ? 0 : (profile.discount_pct||0));
+      let overrides = null;
+      if(!isAdmin && !isGuest){
+        const { data: cps, error: cpErr } = await sb.from("customer_prices")
+          .select("product_id,custom_price").eq("customer_id", session.user.id);
+        if(cpErr) console.warn("customer prices load failed", cpErr);
+        if(cps && cps.length){
+          overrides = {};
+          cps.forEach(r=>{ overrides[r.product_id] = Number(r.custom_price); });
+        }
+      }
+      const cat = buildCatalogFromDB(rows||[], (isAdmin||isGuest) ? 0 : (profile.discount_pct||0), overrides);
       if(alive){ setData(cat); setActiveCat(cat.categories[0].id); }
     })();
     return ()=>{ alive=false; };
-  },[profile, isAdmin, reloadKey]);
+  },[profile, isAdmin, isGuest, session, reloadKey]);
 
   useEffect(()=> store.set("favs", favs), [favs]);
   useEffect(()=> store.set("cart", cart), [cart]);
@@ -1266,7 +1296,7 @@ function App({ session, profile }){
           <span className="name">{CONFIG.brandName}</span>
           <span className="tag">{CONFIG.brandTagline}</span>
         </div>
-        <button className="icon-btn" onClick={()=>go({name:"account"})}><I.user/></button>
+        <button className="icon-btn" onClick={()=>go({name: isGuest ? "login" : "account"})}><I.user/></button>
         <button className="icon-btn" onClick={()=>goTab("search")}><I.search/></button>
         <button className="icon-btn" onClick={()=>goTab("cart")}>
           <I.cart/>{cartCount>0 && <span className="cart-badge">{cartCount>99?"99":cartCount}</span>}
@@ -1286,10 +1316,12 @@ function App({ session, profile }){
       {screen.name==="favorites" &&
         <Favorites data={data} favSet={favSet} onFav={onFav} go={go} mode={mode} setMode={setMode} />}
       {screen.name==="cart" &&
-        <Cart data={data} cart={cart} setCart={setCart} go={go} toast={toast} session={session} profile={profile} />}
-      {screen.name==="account" &&
+        <Cart data={data} cart={cart} setCart={setCart} go={go} toast={toast} session={session} profile={profile} isGuest={isGuest} />}
+      {screen.name==="login" && isGuest &&
+        <Login inApp />}
+      {screen.name==="account" && !isGuest &&
         <Account profile={profile} isAdmin={isAdmin} go={go} />}
-      {screen.name==="orders" &&
+      {screen.name==="orders" && !isGuest &&
         <Orders isAdmin={isAdmin} go={go} />}
       {screen.name==="admin" && isAdmin &&
         <Admin go={go} toast={toast} reloadData={reloadData} />}
@@ -1327,7 +1359,7 @@ function Splash(){
   );
 }
 
-function Login(){
+function Login({ inApp }){
   const [email,setEmail]=useState("");
   const [pass,setPass]=useState("");
   const [err,setErr]=useState("");
@@ -1339,23 +1371,25 @@ function Login(){
     if(error) setErr("אימייל או סיסמה שגויים");
     setBusy(false);
   };
-  return (
-    <div className="auth-wrap">
-      <form className="auth-card" onSubmit={submit}>
-        <div className="brand" style={{justifyContent:"center",marginBottom:6}}>
-          <span className="name" style={{fontSize:30}}>{CONFIG.brandName}</span>
-        </div>
-        <div className="auth-sub">כניסת לקוחות · {CONFIG.brandTagline}</div>
-        <label className="auth-lbl">אימייל</label>
-        <input className="auth-in" type="email" value={email} onChange={e=>setEmail(e.target.value)} autoComplete="username" dir="ltr" required />
-        <label className="auth-lbl">סיסמה</label>
-        <input className="auth-in" type="password" value={pass} onChange={e=>setPass(e.target.value)} autoComplete="current-password" dir="ltr" required />
-        {err && <div className="auth-err">{err}</div>}
-        <button className="auth-btn" type="submit" disabled={busy}>{busy?"מתחבר…":"כניסה"}</button>
-        <div className="auth-note">אין לך חשבון? פנה לבעל העסק לפתיחת חשבון.</div>
-      </form>
-    </div>
+  const form = (
+    <form className="auth-card" onSubmit={submit}>
+      <div className="brand" style={{justifyContent:"center",marginBottom:6}}>
+        <span className="name" style={{fontSize:30}}>{CONFIG.brandName}</span>
+      </div>
+      <div className="auth-sub">כניסת לקוחות עסקיים · {CONFIG.brandTagline}</div>
+      <label className="auth-lbl">אימייל</label>
+      <input className="auth-in" type="email" value={email} onChange={e=>setEmail(e.target.value)} autoComplete="username" dir="ltr" required />
+      <label className="auth-lbl">סיסמה</label>
+      <input className="auth-in" type="password" value={pass} onChange={e=>setPass(e.target.value)} autoComplete="current-password" dir="ltr" required />
+      {err && <div className="auth-err">{err}</div>}
+      <button className="auth-btn" type="submit" disabled={busy}>{busy?"מתחבר…":"כניסה"}</button>
+      <div className="auth-note">הקטלוג פתוח לצפייה לכולם. לחשבון עסקי עם מחירון אישי — פנה לבעל העסק.</div>
+    </form>
   );
+  if(inApp) return (
+    <div className="page" style={{display:"flex",justifyContent:"center",alignItems:"flex-start",padding:24}}>{form}</div>
+  );
+  return <div className="auth-wrap">{form}</div>;
 }
 
 function Account({ profile, isAdmin, go }){
@@ -1511,6 +1545,7 @@ const emptyCustomer = { email:"", password:"", business_name:"", contact_name:""
 function AdminCustomers({ toast }){
   const [rows,setRows]=useState(null);
   const [adding,setAdding]=useState(null);
+  const [pricing,setPricing]=useState(null);
   const [busy,setBusy]=useState(false);
   const load = useCallback(async ()=>{
     const { data } = await sb.from("profiles").select("*").eq("role","customer").order("business_name");
@@ -1532,6 +1567,7 @@ function AdminCustomers({ toast }){
     setAdding(null); load(); toast("לקוח נוצר ✓");
   };
   if(rows===null) return <div className="empty-note">טוען…</div>;
+  if(pricing) return <CustomerPricing customer={pricing} onClose={()=>setPricing(null)} toast={toast} />;
   if(adding) return (
     <div className="adm-form">
       <h3>לקוח חדש</h3>
@@ -1550,13 +1586,13 @@ function AdminCustomers({ toast }){
   return (
     <>
       <button className="adm-add" onClick={()=>setAdding({...emptyCustomer})}><I.plus/> לקוח חדש</button>
-      {rows.map(c=> <CustomerRow key={c.id} c={c} onSave={saveCustomer} />)}
+      {rows.map(c=> <CustomerRow key={c.id} c={c} onSave={saveCustomer} onPricing={()=>setPricing(c)} />)}
       <div style={{height:20}}/>
     </>
   );
 }
 
-function CustomerRow({ c, onSave }){
+function CustomerRow({ c, onSave, onPricing }){
   const [pct,setPct]=useState(String(c.discount_pct));
   const [active,setActive]=useState(c.active);
   return (
@@ -1570,10 +1606,81 @@ function CustomerRow({ c, onSave }){
         <span>%</span>
         <label className="adm-check"><input type="checkbox" checked={active} onChange={e=>setActive(e.target.checked)} /> פעיל</label>
         <button className="auth-btn mini" onClick={()=>onSave(c.id,pct,active)}>שמור</button>
+        <button className="auth-btn mini" style={{background:"var(--olive)"}} onClick={onPricing}>מחירון אישי</button>
       </div>
     </div>
   );
 }
+
+/* Per-customer price quote editor: a custom price per product that overrides
+   the customer's percentage discount. Empty + save -> back to discount pricing. */
+function CustomerPricing({ customer, onClose, toast }){
+  const [rows,setRows]=useState(null);
+  const [vals,setVals]=useState({});
+  const [q,setQ]=useState("");
+  const load = useCallback(async ()=>{
+    const [{ data: prods }, { data: cps }] = await Promise.all([
+      sb.from("products").select("id,name,sku,category,base_price").order("category").order("name"),
+      sb.from("customer_prices").select("product_id,custom_price").eq("customer_id", customer.id),
+    ]);
+    const v = {};
+    (cps||[]).forEach(r=>{ v[r.product_id] = String(Number(r.custom_price)); });
+    setVals(v); setRows(prods||[]);
+  },[customer.id]);
+  useEffect(()=>{ load(); },[load]);
+
+  const save = async (pid)=>{
+    const raw = (vals[pid]??"").trim();
+    let res;
+    if(raw===""){
+      res = await sb.from("customer_prices").delete().eq("customer_id",customer.id).eq("product_id",pid);
+    } else {
+      const n = Number(raw);
+      if(!Number.isFinite(n) || n < 0){ toast("מחיר לא תקין"); return; }
+      res = await sb.from("customer_prices").upsert({ customer_id:customer.id, product_id:pid, custom_price:n });
+    }
+    if(res.error){ toast("שגיאה בשמירה"); return; }
+    toast("עודכן ✓");
+  };
+
+  if(rows===null) return <div className="empty-note">טוען…</div>;
+  const pct = Number(customer.discount_pct)||0;
+  const term = q.trim().toLowerCase();
+  const list = term ? rows.filter(p=>((p.name||"")+" "+(p.sku||"")).toLowerCase().includes(term)) : rows;
+  return (
+    <>
+      <div className="adm-form" style={{marginBottom:4}}>
+        <h3>מחירון אישי — {customer.business_name||customer.email}</h3>
+        <div style={{fontSize:13,color:"var(--muted)",lineHeight:1.5,marginBottom:10}}>
+          מחיר מותאם גובר על ההנחה הקבועה ({pct}%). השאר ריק ולחץ שמור כדי לחזור לתמחור לפי הנחה.
+        </div>
+        <input className="auth-in" placeholder="חיפוש מוצר או מק״ט…" value={q} onChange={e=>setQ(e.target.value)} />
+      </div>
+      {list.length===0 && <div className="empty-note">לא נמצאו מוצרים.</div>}
+      {list.map(p=>{
+        const eff = Math.round((Number(p.base_price)||0)*(1-pct/100));
+        const hasCustom = (vals[p.id]??"").trim()!=="";
+        return (
+          <div className="adm-row" key={p.id}>
+            <div className="adm-row-main">
+              <b>{p.name}</b>
+              <span>{p.sku||"—"} · מחירון: {CONFIG.currency}{Math.round(p.base_price)}{pct>0?` · אחרי הנחה: ${CONFIG.currency}${eff}`:""}{hasCustom?" · מותאם":""}</span>
+            </div>
+            <div className="cust-ctrl">
+              <span style={{color:"var(--muted)"}}>{CONFIG.currency}</span>
+              <input className="auth-in mini" type="number" placeholder="—" value={vals[p.id]??""} onChange={e=>setVals(o=>({...o,[p.id]:e.target.value}))} dir="ltr" />
+              <button className="auth-btn mini" onClick={()=>save(p.id)}>שמור</button>
+            </div>
+          </div>
+        );
+      })}
+      <button className="auth-btn" style={{marginTop:10}} onClick={onClose}>חזרה לרשימת הלקוחות</button>
+      <div style={{height:20}}/>
+    </>
+  );
+}
+
+const GUEST_PROFILE = { role:"guest", discount_pct:0 };
 
 function Root(){
   const [session,setSession]=useState(undefined);
@@ -1591,7 +1698,8 @@ function Root(){
     return ()=>{ alive=false; };
   },[session]);
   if(session===undefined) return <Splash/>;
-  if(!session) return <Login/>;
+  // No session -> public catalog at list prices (guest mode).
+  if(!session) return <App session={null} profile={GUEST_PROFILE} />;
   if(!profile) return <Splash/>;
   return <App session={session} profile={profile} />;
 }
