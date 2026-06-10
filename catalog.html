@@ -192,6 +192,11 @@
   /* ---------- product detail ---------- */
   .pd-gallery{position:relative;width:100%;aspect-ratio:1/1;background:var(--accent-soft);}
   .pd-gallery img{width:100%;height:100%;object-fit:cover;}
+  .pd-count{
+    position:absolute;bottom:10px;left:10px;z-index:2;font-size:11px;font-weight:700;
+    background:rgba(20,16,12,.55);color:#fff;padding:3px 9px;border-radius:999px;
+    backdrop-filter:blur(4px);direction:ltr;
+  }
   .pd-thumbs{display:flex;gap:8px;padding:12px 16px 0;overflow-x:auto;scrollbar-width:none;}
   .pd-thumbs::-webkit-scrollbar{display:none;}
   .pd-thumb{flex:0 0 56px;height:56px;border-radius:10px;overflow:hidden;border:2px solid transparent;background:var(--accent-soft);}
@@ -416,29 +421,41 @@ const sb = window.supabase.createClient(CONFIG.supabaseUrl, CONFIG.supabaseAnonK
 // per customer that wins over the percentage discount.
 function buildCatalogFromDB(rows, discountPct, priceOverrides){
   const cats = [];
-  const seen = new Set();
+  const seenCat = new Set();
+  const subs = [];
+  const seenSub = new Set();
   const products = (rows||[]).map(r=>{
     const cat = r.category || "כללי";
-    if(!seen.has(cat)){ seen.add(cat); cats.push({ id:cat, name:cat }); }
+    if(!seenCat.has(cat)){ seenCat.add(cat); cats.push({ id:cat, name:cat }); }
+    const subName = r.subcategory || cat;
+    const subId = cat + "›" + subName;
+    if(!seenSub.has(subId)){ seenSub.add(subId); subs.push({ id:subId, categoryId:cat, name:subName }); }
     const override = priceOverrides ? priceOverrides[r.id] : undefined;
     const price = override!=null
       ? Math.round(Number(override))
       : Math.round((Number(r.base_price)||0) * (1 - (Number(discountPct)||0)/100));
+    const images = (Array.isArray(r.images) ? r.images : []).filter(u=>typeof u==="string" && u.trim());
+    if(!images.length && r.image_url) images.push(r.image_url);
+    const variants = (Array.isArray(r.variants) ? r.variants : [])
+      .filter(v=>v && (v.label || v.sku))
+      .map(v=>({ label: v.label || "", sku: v.sku || r.sku || "" }));
     return {
       id: r.id, name: r.name, sku: r.sku || "",
-      categoryId: cat, subcategoryId: cat,
-      image: r.image_url || null,
+      categoryId: cat, subcategoryId: subId,
+      image: images[0] || null,
+      images,
       description: r.description || "",
       base_price: Number(r.base_price)||0,
       active: r.active,
-      variants: [{ label:"", sku: r.sku || "" }],
-      badge: null, featured: false,
+      variants: variants.length ? variants : [{ label:"", sku: r.sku || "" }],
+      badge: r.badge || null,
+      featured: !!r.featured,
       price,
     };
   });
   return {
     categories: cats.length ? cats : [{ id:"כללי", name:"כללי" }],
-    subcategories: [],
+    subcategories: subs,
     products,
   };
 }
@@ -563,48 +580,96 @@ function buildDemoCatalog(target){
   return { categories, subcategories, products };
 }
 
-/* ---- procedural placeholder thumbnail (cached) ----
-   Used only when a product has no real image. Renders instantly, no network. */
+/* ---- procedural product "studio shots" (cached) ----
+   Used only when a product has no real images. Each product gets a small
+   gallery of deterministic views (front / angle / macro / spec card) so the
+   multi-image UI is fully demonstrable with zero network and no broken links.
+   Real image URLs in products.images always win. */
 const SHAPES = {
-  hardware: "M58 96 h84 a10 10 0 0 1 0 20 h-84 a10 10 0 0 1 0-20 z M52 84 a8 8 0 1 1 0 16 a8 8 0 0 1 0-16 z M148 84 a8 8 0 1 1 0 16 a8 8 0 0 1 0-16 z",
-  raw:      "M40 70 h120 v16 h-120 z M40 96 h120 v16 h-120 z M40 122 h120 v16 h-120 z",
-  glue:     "M86 50 h28 v14 h6 v18 l8 10 v52 a8 8 0 0 1-8 8 h-50 a8 8 0 0 1-8-8 v-52 l8-10 v-18 h6 z",
-  finish:   "M120 52 l22 8 -8 22 -22-8 z M118 80 l-44 44 a14 14 0 0 1-20-20 l44-44 z M58 132 l12 12",
-  tools:    "M70 60 a26 26 0 0 1 36 36 l44 44 -16 16 -44-44 a26 26 0 0 1-20-52 z",
-  light:    "M100 48 a34 34 0 0 1 22 60 v14 h-44 v-14 a34 34 0 0 1 22-60 z M84 132 h32 M88 144 h24",
+  "פרזול":     "M58 96 h84 a10 10 0 0 1 0 20 h-84 a10 10 0 0 1 0-20 z M52 84 a8 8 0 1 1 0 16 a8 8 0 0 1 0-16 z M148 84 a8 8 0 1 1 0 16 a8 8 0 0 1 0-16 z",
+  "חומרי גלם": "M40 70 h120 v16 h-120 z M40 96 h120 v16 h-120 z M40 122 h120 v16 h-120 z",
+  "דבקים":     "M86 50 h28 v14 h6 v18 l8 10 v52 a8 8 0 0 1-8 8 h-50 a8 8 0 0 1-8-8 v-52 l8-10 v-18 h6 z",
+  "גימור":     "M120 52 l22 8 -8 22 -22-8 z M118 80 l-44 44 a14 14 0 0 1-20-20 l44-44 z M58 132 l12 12",
+  "כלי עבודה": "M70 60 a26 26 0 0 1 36 36 l44 44 -16 16 -44-44 a26 26 0 0 1-20-52 z",
+  "תאורה":     "M100 48 a34 34 0 0 1 22 60 v14 h-44 v-14 a34 34 0 0 1 22-60 z M84 132 h32 M88 144 h24",
 };
 const _thumbCache = new Map();
-function thumb(p){
-  if(p.image) return p.image;            // real image (url or base64) wins
-  if(_thumbCache.has(p.id)) return _thumbCache.get(p.id);
+function procImage(p, view){
+  const key = p.id + "#" + view;
+  if(_thumbCache.has(key)) return _thumbCache.get(key);
   const h = hash(p.id);
   const hue = 22 + (h % 26);
-  const bg1 = `hsl(${hue},30%,${90-(h%6)}%)`;
-  const bg2 = `hsl(${hue},26%,${80-(h%8)}%)`;
+  const path = SHAPES[p.categoryId] || SHAPES["פרזול"];
   const fg  = `hsl(${hue-4},34%,38%)`;
-  const path = SHAPES[p.categoryId] || SHAPES.hardware;
+  let body;
+  if(view===1){
+    // angle shot — rotated, warm side light
+    body =
+      `<rect width='200' height='200' fill='url(#g)'/>`+
+      `<circle cx='150' cy='44' r='52' fill='white' opacity='0.22'/>`+
+      `<ellipse cx='100' cy='158' rx='62' ry='10' fill='black' opacity='0.10'/>`+
+      `<g transform='rotate(-9 100 100) translate(4 -4) scale(1.08) '><g transform='translate(-8 -8)'>`+
+      `<path d='${path}' fill='${fg}' opacity='0.9'/></g></g>`;
+  } else if(view===2){
+    // macro / detail crop
+    body =
+      `<rect width='200' height='200' fill='url(#g)'/>`+
+      `<g transform='translate(-95 -85) scale(1.95)'><path d='${path}' fill='${fg}' opacity='0.92'/></g>`+
+      `<rect width='200' height='200' fill='url(#v)'/>`;
+  } else if(view===3){
+    // spec card — product + dimension marks + SKU
+    const dim = `hsl(${hue-4},20%,52%)`;
+    body =
+      `<rect width='200' height='200' fill='url(#g)'/>`+
+      `<g transform='translate(20 6) scale(0.8)'><path d='${path}' fill='${fg}' opacity='0.85'/></g>`+
+      `<g stroke='${dim}' stroke-width='1.4'>`+
+      `<path d='M38 168 h124 M38 163 v10 M162 163 v10' fill='none'/>`+
+      `<path d='M176 60 v60 M171 60 h10 M171 120 h10' fill='none'/></g>`+
+      `<text x='100' y='187' font-family='monospace' font-size='11' fill='${dim}' text-anchor='middle' direction='ltr'>${(p.sku||"").replace(/[<>&]/g,"")}</text>`;
+  } else {
+    // front studio shot
+    body =
+      `<rect width='200' height='200' fill='url(#g)'/>`+
+      `<ellipse cx='100' cy='156' rx='58' ry='9' fill='black' opacity='0.08'/>`+
+      `<path d='${path}' fill='${fg}' opacity='0.85'/>`;
+  }
+  const grads = (view===1)
+    ? `<linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='hsl(${hue},34%,${86-(h%6)}%)'/><stop offset='1' stop-color='hsl(${hue+8},30%,${74-(h%8)}%)'/></linearGradient>`
+    : (view===2)
+    ? `<linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='hsl(${hue},26%,${78-(h%6)}%)'/><stop offset='1' stop-color='hsl(${hue},30%,${62-(h%8)}%)'/></linearGradient>`+
+      `<radialGradient id='v' cx='0.5' cy='0.5' r='0.75'><stop offset='0.62' stop-color='black' stop-opacity='0'/><stop offset='1' stop-color='black' stop-opacity='0.22'/></radialGradient>`
+    : (view===3)
+    ? `<linearGradient id='g' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='hsl(${hue},22%,96%)'/><stop offset='1' stop-color='hsl(${hue},22%,90%)'/></linearGradient>`
+    : `<linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='hsl(${hue},30%,${90-(h%6)}%)'/><stop offset='1' stop-color='hsl(${hue},26%,${80-(h%8)}%)'/></linearGradient>`;
   const svg =
     `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'>`+
-    `<defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'>`+
-    `<stop offset='0' stop-color='${bg1}'/><stop offset='1' stop-color='${bg2}'/></linearGradient></defs>`+
-    `<rect width='200' height='200' fill='url(#g)'/>`+
-    `<path d='${path}' fill='${fg}' opacity='0.85'/></svg>`;
+    `<defs>${grads}</defs>${body}</svg>`;
   const uri = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
-  _thumbCache.set(p.id, uri);
+  _thumbCache.set(key, uri);
   return uri;
+}
+function thumb(p){
+  if(p.image) return p.image;            // real image (url or base64) wins
+  return procImage(p, 0);
+}
+// full gallery for the product page: real images if any, else 4 studio views
+function productImages(p){
+  if(p.images && p.images.length) return p.images;
+  if(p.image) return [p.image];
+  return [0,1,2,3].map(v=>procImage(p, v));
 }
 
 /* =========================================================================
    LAZY IMAGE  — skeleton + fade-in, async decode, error fallback
    ========================================================================= */
-const LazyImg = memo(function LazyImg({ product, alt }){
+const LazyImg = memo(function LazyImg({ product, alt, src }){
   const [loaded, setLoaded] = useState(false);
-  const src = thumb(product);
+  const finalSrc = src || thumb(product);
   return (
     <>
       {!loaded && <div className="skel" style={{position:"absolute",inset:0}} />}
       <img
-        src={src} alt={alt||product.name}
+        src={finalSrc} alt={alt||product.name}
         loading="lazy" decoding="async"
         className={loaded?"ld":""}
         onLoad={()=>setLoaded(true)}
@@ -799,23 +864,43 @@ const SORTS = {
   phi:  { label:"מחיר ↓",   fn:(a,b)=>(b.price||0)-(a.price||0) },
 };
 
+const QUICK_FILTERS = [
+  { id:"all",      label:"הכל",     fn:null },
+  { id:"sale",     label:"מבצעים",  fn:p=>p.badge==="מבצע" },
+  { id:"new",      label:"חדשים",   fn:p=>p.badge==="חדש" },
+  { id:"featured", label:"מומלצים", fn:p=>p.featured },
+  { id:"variants", label:"רב-וריאציות", fn:p=>p.variants.length>1 },
+];
+
 function ProductList({ data, params, go, favSet, onFav, mode, setMode }){
   const [sort, setSort] = useState("rel");
+  const [filt, setFilt] = useState("all");
   const sub = params.sub ? data.subcategories.find(s=>s.id===params.sub) : null;
   const cat = data.categories.find(c=>c.id===params.cat);
 
+  const scoped = useMemo(()=>
+    data.products.filter(p=> p.categoryId===params.cat && (!params.sub || p.subcategoryId===params.sub)),
+  [data, params]);
+
+  const counts = useMemo(()=>{
+    const m = {};
+    QUICK_FILTERS.forEach(f=>{ m[f.id] = f.fn ? scoped.filter(f.fn).length : scoped.length; });
+    return m;
+  },[scoped]);
+
   const items = useMemo(()=>{
-    let arr = data.products.filter(p=> p.categoryId===params.cat && (!params.sub || p.subcategoryId===params.sub));
+    const qf = QUICK_FILTERS.find(f=>f.id===filt);
+    let arr = qf && qf.fn ? scoped.filter(qf.fn) : scoped;
     const f = SORTS[sort].fn;
     if(f) arr = [...arr].sort(f);
     return arr;
-  },[data, params, sort]);
+  },[scoped, sort, filt]);
 
   const sorts = CONFIG.showPrices ? ["rel","az","za","plo","phi"] : ["rel","az","za"];
 
   return (
     <>
-      <div className="breadcrumb"><b onClick={()=>go({name:"category", cat:params.cat})}>{cat?.name}</b>{sub? " › "+sub.name : ""}</div>
+      <div className="breadcrumb"><b onClick={()=>go({name:"category", cat:params.cat})}>{cat?.name}</b>{sub && sub.name!==cat?.name ? " › "+sub.name : ""}</div>
       <div className="toolbar">
         <div className="ttl"><b>{sub? sub.name : cat?.name}</b><span>{items.length.toLocaleString("he")} פריטים</span></div>
         <select className="sortsel" value={sort} onChange={e=>setSort(e.target.value)}>
@@ -825,6 +910,13 @@ function ProductList({ data, params, go, favSet, onFav, mode, setMode }){
           <button className={mode==="grid"?"on":""} onClick={()=>setMode("grid")}><I.grid width="17" height="17"/></button>
           <button className={mode==="list"?"on":""} onClick={()=>setMode("list")}><I.rows width="17" height="17"/></button>
         </div>
+      </div>
+      <div className="chips" style={{padding:"9px 14px",background:"var(--surface)",borderBottom:"1px solid var(--line)"}}>
+        {QUICK_FILTERS.filter(f=>f.id==="all" || counts[f.id]>0).map(f=>(
+          <button key={f.id} className={"chip"+(filt===f.id?" active":"")} onClick={()=>setFilt(f.id)}>
+            {f.label}{f.id!=="all" ? ` (${counts[f.id]})` : ""}
+          </button>
+        ))}
       </div>
       {items.length===0
         ? <div className="empty-note">לא נמצאו פריטים בקטגוריה זו.</div>
@@ -852,7 +944,9 @@ function Search({ data, go, favSet, onFav, mode, setMode }){
     const out = [];
     for(let i=0;i<data.products.length;i++){
       const p = data.products[i];
-      const hay = (p.name + " " + p.sku).toLowerCase();
+      // name + base SKU + category›subcategory + every variant label/SKU
+      const hay = (p.name + " " + p.sku + " " + p.subcategoryId + " " +
+        p.variants.map(v=>v.label+" "+v.sku).join(" ")).toLowerCase();
       let ok = true;
       for(const w of words){ if(hay.indexOf(w)===-1){ ok=false; break; } }
       if(ok){ out.push(p); if(out.length>=2000) break; }
@@ -889,7 +983,10 @@ function Search({ data, go, favSet, onFav, mode, setMode }){
 
 function ProductDetail({ data, product, go, favSet, onFav, addToCart, toast }){
   const [vi, setVi] = useState(0);
+  const [gi, setGi] = useState(0);          // gallery image index
   const [qty, setQty] = useState(1);
+  useEffect(()=>{ setVi(0); setGi(0); setQty(1); }, [product.id]);
+  const imgs = useMemo(()=> productImages(product), [product]);
   const cat = data.categories.find(c=>c.id===product.categoryId);
   const sub = data.subcategories.find(s=>s.id===product.subcategoryId);
   const isFav = favSet.has(product.id);
@@ -909,16 +1006,20 @@ function ProductDetail({ data, product, go, favSet, onFav, addToCart, toast }){
   return (
     <>
       <div className="page">
-        <div className="pd-gallery"><LazyImg product={product} /></div>
-        <div className="pd-thumbs">
-          {product.variants.map((v,i)=>(
-            <div key={i} className={"pd-thumb"+(i===vi?" on":"")} onClick={()=>setVi(i)}>
-              <LazyImg product={{...product, id:product.id+"_v"+i}} />
-            </div>
-          ))}
+        <div className="pd-gallery">
+          <LazyImg key={gi} product={product} src={imgs[gi]} />
+          {imgs.length>1 && <span className="pd-count">{gi+1}/{imgs.length}</span>}
         </div>
+        {imgs.length>1 &&
+          <div className="pd-thumbs">
+            {imgs.map((s,i)=>(
+              <div key={i} className={"pd-thumb"+(i===gi?" on":"")} onClick={()=>setGi(i)}>
+                <LazyImg product={product} src={s} />
+              </div>
+            ))}
+          </div>}
         <div className="pd-info">
-          <div className="pd-cat" onClick={()=>go({name:"list", cat:product.categoryId, sub:product.subcategoryId})}>{cat?.name}{sub?.name? " › "+sub.name : ""}</div>
+          <div className="pd-cat" onClick={()=>go({name:"list", cat:product.categoryId, sub:product.subcategoryId})}>{cat?.name}{sub?.name && sub.name!==cat?.name ? " › "+sub.name : ""}</div>
           <h1 className="pd-title">{product.name}</h1>
           <div className="pd-sku">מק״ט: {product.variants[vi]?.sku || product.sku}</div>
           {CONFIG.showPrices && product.price!=null && <div className="price" style={{fontSize:22,marginTop:8}}>{CONFIG.currency}{product.price}</div>}
@@ -939,7 +1040,7 @@ function ProductDetail({ data, product, go, favSet, onFav, addToCart, toast }){
             <button onClick={()=>setQty(q=>q+1)}>+</button>
           </div>
 
-          <p className="pd-desc">פריט מקטלוג {CONFIG.brandName}. זמין במלאי בכפוף לאישור הזמנה. לפרטים נוספים, מידות מדויקות וזמינות — הוסיפו לסל ושלחו הזמנה ונחזור אליכם בוואטסאפ.</p>
+          <p className="pd-desc">{product.description || `פריט מקטלוג ${CONFIG.brandName}. זמין במלאי בכפוף לאישור הזמנה. לפרטים נוספים, מידות מדויקות וזמינות — הוסיפו לסל ושלחו הזמנה ונחזור אליכם בוואטסאפ.`}</p>
         </div>
         <div style={{height:16}} />
       </div>
@@ -1204,7 +1305,7 @@ function App({ session, profile }){
   useEffect(()=>{
     let alive = true;
     (async ()=>{
-      let q = sb.from("products").select("*").order("category").order("name");
+      let q = sb.from("products").select("*").order("category").order("subcategory").order("name");
       if(!isAdmin) q = q.eq("active", true);
       const { data: rows, error } = await q;
       if(error) console.warn("products load failed", error);
@@ -1479,17 +1580,40 @@ function Admin({ go, toast, reloadData }){
   );
 }
 
-const emptyProduct = { name:"", sku:"", category:"", base_price:"", image_url:"", description:"", active:true };
+const emptyProduct = { name:"", sku:"", category:"", subcategory:"", base_price:"", image_url:"", description:"", badge:"", featured:false, images_text:"", variants_text:"", active:true };
+
+// edit-state <-> DB row: images as one URL per line, variants as "label | sku" lines
+function productToEdit(p){
+  return {
+    ...p,
+    base_price: String(p.base_price),
+    badge: p.badge || "",
+    images_text: (Array.isArray(p.images)?p.images:[]).join("\n"),
+    variants_text: (Array.isArray(p.variants)?p.variants:[]).map(v=>v.label+(v.sku?" | "+v.sku:"")).join("\n"),
+  };
+}
+function editToRow(edit){
+  const { images_text, variants_text, ...p } = edit;
+  p.base_price = Number(edit.base_price)||0;
+  p.badge = edit.badge || null;
+  p.images = (images_text||"").split("\n").map(s=>s.trim()).filter(Boolean);
+  p.variants = (variants_text||"").split("\n").map(s=>s.trim()).filter(Boolean).map(line=>{
+    const [label, sku] = line.split("|").map(x=>x.trim());
+    return { label: label||"", sku: sku||"" };
+  });
+  return p;
+}
+
 function AdminProducts({ toast, reloadData }){
   const [rows,setRows]=useState(null);
   const [edit,setEdit]=useState(null);
   const load = useCallback(async ()=>{
-    const { data } = await sb.from("products").select("*").order("category").order("name");
+    const { data } = await sb.from("products").select("*").order("category").order("subcategory").order("name");
     setRows(data||[]);
   },[]);
   useEffect(()=>{ load(); },[load]);
   const save = async ()=>{
-    const p = { ...edit, base_price: Number(edit.base_price)||0 };
+    const p = editToRow(edit);
     let res;
     if(p.id){ const { id, created_at, ...upd } = p; res = await sb.from("products").update(upd).eq("id",p.id); }
     else { const { id, ...ins } = p; res = await sb.from("products").insert(ins); }
@@ -1509,10 +1633,10 @@ function AdminProducts({ toast, reloadData }){
       {rows.map(p=>(
         <div className="adm-row" key={p.id}>
           <div className="adm-row-main">
-            <b>{p.name}</b>
-            <span>{p.sku} · {p.category||"—"} · {CONFIG.currency}{Math.round(p.base_price)}{!p.active && " · כבוי"}</span>
+            <b>{p.name}{p.badge?` · ${p.badge}`:""}{p.featured?" · ★":""}</b>
+            <span>{p.sku} · {p.category||"—"}{p.subcategory?` › ${p.subcategory}`:""} · {CONFIG.currency}{Math.round(p.base_price)}{!p.active && " · כבוי"}</span>
           </div>
-          <button className="icon-btn" onClick={()=>setEdit({...p, base_price:String(p.base_price)})}><I.edit/></button>
+          <button className="icon-btn" onClick={()=>setEdit(productToEdit(p))}><I.edit/></button>
           <button className="icon-btn" onClick={()=>del(p.id)} style={{color:"var(--faint)"}}><I.trash/></button>
         </div>
       ))}
@@ -1529,9 +1653,18 @@ function ProductForm({ value, setValue, onSave, onCancel }){
       <label>שם</label><input className="auth-in" value={value.name} onChange={e=>set("name",e.target.value)} />
       <label>מק״ט</label><input className="auth-in" value={value.sku} onChange={e=>set("sku",e.target.value)} dir="ltr" />
       <label>קטגוריה</label><input className="auth-in" value={value.category} onChange={e=>set("category",e.target.value)} />
+      <label>תת-קטגוריה</label><input className="auth-in" value={value.subcategory||""} onChange={e=>set("subcategory",e.target.value)} />
       <label>מחיר בסיס (₪)</label><input className="auth-in" type="number" value={value.base_price} onChange={e=>set("base_price",e.target.value)} dir="ltr" />
-      <label>קישור לתמונה</label><input className="auth-in" value={value.image_url} onChange={e=>set("image_url",e.target.value)} dir="ltr" placeholder="https://…" />
-      <label>תיאור</label><textarea className="auth-in" rows="2" value={value.description} onChange={e=>set("description",e.target.value)} />
+      <label>תווית</label>
+      <select className="auth-in" value={value.badge||""} onChange={e=>set("badge",e.target.value)}>
+        <option value="">ללא</option><option value="מבצע">מבצע</option><option value="חדש">חדש</option>
+      </select>
+      <label className="adm-check"><input type="checkbox" checked={!!value.featured} onChange={e=>set("featured",e.target.checked)} /> מומלץ (מוצג בעמוד הבית)</label>
+      <label>תמונות (קישור בכל שורה — ללא קישורים תוצג גלריית דמו)</label>
+      <textarea className="auth-in" rows="3" value={value.images_text||""} onChange={e=>set("images_text",e.target.value)} dir="ltr" placeholder={"https://…\nhttps://…"} />
+      <label>וריאציות (שורה לכל וריאציה: תווית | מק״ט)</label>
+      <textarea className="auth-in" rows="3" value={value.variants_text||""} onChange={e=>set("variants_text",e.target.value)} placeholder={"שחור מט | HD-100-BLK\nניקל מוברש | HD-100-NKL"} />
+      <label>תיאור</label><textarea className="auth-in" rows="3" value={value.description} onChange={e=>set("description",e.target.value)} />
       <label className="adm-check"><input type="checkbox" checked={value.active} onChange={e=>set("active",e.target.checked)} /> פעיל (מוצג ללקוחות)</label>
       <div className="adm-form-btns">
         <button className="auth-btn" onClick={onSave}>שמירה</button>
