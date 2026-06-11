@@ -496,6 +496,7 @@ const I = {
   logout:  p => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>,
   plus:    p => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" {...p}><path d="M12 5v14M5 12h14"/></svg>,
   edit:    p => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg>,
+  install: p => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M12 3v12"/><path d="M8 11l4 4 4-4"/><path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>,
 };
 
 /* =========================================================================
@@ -1190,35 +1191,58 @@ if("serviceWorker" in navigator){
 }
 
 /* =========================================================================
-   INSTALL BANNER  — Android (beforeinstallprompt) + iOS (Safari guide)
+   PWA INSTALL  — capture the prompt at module load so it is never missed
+   (beforeinstallprompt can fire before any component mounts), and expose a
+   tiny hook so both the banner and the account screen can trigger install.
    ========================================================================= */
-function InstallBanner(){
-  const [deferredPrompt, setDeferredPrompt] = useState(null);
-  const [showIOSSheet, setShowIOSSheet] = useState(false);
-  const [dismissed, setDismissed] = useState(() => store.get("install_dismissed", false));
+let _deferredInstallPrompt = null;
+const _installSubs = new Set();
+const _notifyInstall = ()=> _installSubs.forEach(fn=>fn());
+const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 
-  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-  const isInStandalone = window.matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+window.addEventListener("beforeinstallprompt", (e)=>{
+  e.preventDefault();
+  _deferredInstallPrompt = e;
+  _notifyInstall();
+});
+window.addEventListener("appinstalled", ()=>{
+  _deferredInstallPrompt = null;
+  store.set("install_dismissed", true);
+  _notifyInstall();
+});
 
+function isStandalone(){
+  return window.matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+}
+
+// Returns install affordances; re-renders the caller when availability changes.
+function useInstall(){
+  const [, force] = useState(0);
   useEffect(()=>{
-    const handler = e => { e.preventDefault(); setDeferredPrompt(e); };
-    window.addEventListener("beforeinstallprompt", handler);
-    return () => window.removeEventListener("beforeinstallprompt", handler);
+    const fn = ()=> force(x=>x+1);
+    _installSubs.add(fn);
+    return ()=> _installSubs.delete(fn);
   },[]);
-
-  if(isInStandalone || dismissed) return null;
-  if(!deferredPrompt && !isIOS) return null;
-
-  const dismiss = () => { store.set("install_dismissed", true); setDismissed(true); };
-
-  const installAndroid = async () => {
-    if(!deferredPrompt) return;
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    setDeferredPrompt(null);
-    if(outcome === "accepted") dismiss();
+  const promptAndroid = async ()=>{
+    if(!_deferredInstallPrompt) return false;
+    _deferredInstallPrompt.prompt();
+    const { outcome } = await _deferredInstallPrompt.userChoice;
+    _deferredInstallPrompt = null;
+    _notifyInstall();
+    return outcome === "accepted";
   };
+  return {
+    canInstallAndroid: !!_deferredInstallPrompt,
+    isIOS: IS_IOS,
+    standalone: isStandalone(),
+    // Something to show if the OS hasn't (or won't) fire beforeinstallprompt.
+    installable: !!_deferredInstallPrompt || IS_IOS,
+    promptAndroid,
+  };
+}
 
+/* iOS Safari can't trigger install programmatically — guide the user. */
+function IOSInstallSheet({ onClose }){
   const ShareIcon = () => (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="install-step-icon">
       <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/>
@@ -1229,9 +1253,8 @@ function InstallBanner(){
       <rect x="3" y="3" width="18" height="18" rx="4"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/>
     </svg>
   );
-
-  if(showIOSSheet) return (
-    <div className="install-sheet-overlay" onClick={e=>{ if(e.target===e.currentTarget) setShowIOSSheet(false); }}>
+  return (
+    <div className="install-sheet-overlay" onClick={e=>{ if(e.target===e.currentTarget) onClose(); }}>
       <div className="install-sheet">
         <div className="install-sheet-handle"/>
         <div className="install-sheet-title">התקן כאפליקציה</div>
@@ -1259,9 +1282,32 @@ function InstallBanner(){
             </div>
           </div>
         </div>
-        <button className="install-sheet-close" onClick={()=>{ setShowIOSSheet(false); dismiss(); }}>הבנתי, תודה!</button>
+        <button className="install-sheet-close" onClick={onClose}>הבנתי, תודה!</button>
       </div>
     </div>
+  );
+}
+
+/* =========================================================================
+   INSTALL BANNER  — Android (beforeinstallprompt) + iOS (Safari guide)
+   ========================================================================= */
+function InstallBanner(){
+  const { canInstallAndroid, isIOS, standalone, installable, promptAndroid } = useInstall();
+  const [showIOSSheet, setShowIOSSheet] = useState(false);
+  const [dismissed, setDismissed] = useState(() => store.get("install_dismissed", false));
+
+  if(standalone || dismissed) return null;
+  if(!installable) return null;
+
+  const dismiss = () => { store.set("install_dismissed", true); setDismissed(true); };
+
+  const installAndroid = async () => {
+    const accepted = await promptAndroid();
+    if(accepted) dismiss();
+  };
+
+  if(showIOSSheet) return (
+    <IOSInstallSheet onClose={()=>{ setShowIOSSheet(false); dismiss(); }} />
   );
 
   return (
@@ -1271,7 +1317,7 @@ function InstallBanner(){
         התקן כאפליקציה
         <small>גישה מהירה ישירות מהמסך הבית</small>
       </div>
-      {isIOS
+      {isIOS && !canInstallAndroid
         ? <button className="install-bar-btn" onClick={()=>setShowIOSSheet(true)}>הוראות</button>
         : <button className="install-bar-btn" onClick={installAndroid}>התקן</button>}
       <button className="install-bar-close" onClick={dismiss}>✕</button>
@@ -1324,6 +1370,19 @@ function App({ session, profile }){
     })();
     return ()=>{ alive=false; };
   },[profile, isAdmin, isGuest, session, reloadKey]);
+
+  // Drop any favorite whose product no longer exists in the loaded catalog.
+  // Without this a stale id left in storage keeps inflating the nav badge
+  // (e.g. shows "1") while the favorites screen — which filters by real
+  // products — stays empty.
+  useEffect(()=>{
+    if(!data || !data.products || !data.products.length) return;
+    const ids = new Set(data.products.map(p=>p.id));
+    setFavs(f=>{
+      const pruned = f.filter(id=>ids.has(id));
+      return pruned.length===f.length ? f : pruned;
+    });
+  },[data]);
 
   useEffect(()=> store.set("favs", favs), [favs]);
   useEffect(()=> store.set("cart", cart), [cart]);
@@ -1495,6 +1554,12 @@ function Login({ inApp }){
 
 function Account({ profile, isAdmin, go }){
   const logout = async ()=>{ await sb.auth.signOut(); };
+  const { isIOS, standalone, installable, canInstallAndroid, promptAndroid } = useInstall();
+  const [showIOSSheet, setShowIOSSheet] = useState(false);
+  const install = async ()=>{
+    if(isIOS && !canInstallAndroid){ setShowIOSSheet(true); return; }
+    await promptAndroid();
+  };
   return (
     <div className="page">
       <div className="acc-head">
@@ -1509,8 +1574,11 @@ function Account({ profile, isAdmin, go }){
       <div className="acc-menu">
         <button className="acc-item" onClick={()=>go({name:"orders"})}><I.box/><span>{isAdmin?"כל ההזמנות":"ההזמנות שלי"}</span></button>
         {isAdmin && <button className="acc-item" onClick={()=>go({name:"admin"})}><I.gear/><span>ניהול חנות</span></button>}
+        {!standalone && installable &&
+          <button className="acc-item" onClick={install}><I.install/><span>התקנת האפליקציה</span></button>}
         <button className="acc-item danger" onClick={logout}><I.logout/><span>התנתקות</span></button>
       </div>
+      {showIOSSheet && <IOSInstallSheet onClose={()=>setShowIOSSheet(false)} />}
     </div>
   );
 }
